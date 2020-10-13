@@ -1,0 +1,53 @@
+% 2017 Round 1B, Problem A, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/8294486/dashboard#s=p1
+% Stable Neigh-bors
+
+import util, sat.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [N,R,O,Y,G,B,V] = [to_int(Token) : Token in read_line().split()],
+        once catch(dc(TC,N,R,O,Y,G,B,V),_, printf(stderr,"Case #%w: IMPOSSIBLE\n", TC))
+    end.
+
+dc(TC,N,R,O,Y,G,B,V) ?=>
+    Vr = new_list(N), Vr :: 0..1,
+    Vb = new_list(N), Vb :: 0..1,
+    Vy = new_list(N), Vy :: 0..1,
+    foreach (I in 1..N)
+        Vr[I]+Vb[I]+Vy[I] #=< 2,
+        Vr[I]+Vb[I]+Vy[I] #> 0
+    end,
+    sum([Vr[I] : I in 1..N]) #= R+O+V,
+    sum([Vb[I] : I in 1..N]) #= B+G+V,  
+    sum([Vy[I] : I in 1..N]) #= Y+O+G,
+    sum([Vr[I] #/\ Vy[I] : I in 1..N]) #= O,
+    sum([Vr[I] #/\ Vb[I] : I in 1..N]) #= V,
+    sum([Vy[I] #/\ Vb[I] : I in 1..N]) #= G,		
+    foreach (I in 1..N-1)
+        Vr[I]+Vr[I+1] #=< 1,
+        Vb[I]+Vb[I+1] #=< 1,
+        Vy[I]+Vy[I+1] #=< 1
+    end,
+    Vr[1]+Vr[N] #=< 1,
+    Vb[1]+Vb[N] #=< 1,
+    Vy[1]+Vy[N] #=< 1,
+    once solve({Vr,Vb,Vy}),
+    printf(stderr,"Case #%w: ", TC),
+    foreach (I in 1..N)
+        print_a(Vr[I],Vb[I],Vy[I])
+    end,
+    nl(stderr).
+dc(TC,N,R,O,Y,G,B,V) ?=>
+    printf(stderr,"Case #%w: IMPOSSIBLE\n", TC).
+
+print_a(1,_,1) => print(stderr,'O').
+print_a(1,1,_) => print(stderr,'V').
+print_a(_,1,1) => print(stderr,'G').
+print_a(1,_,_) => print(stderr,'R').
+print_a(_,1,_) => print(stderr,'B').
+print_a(_,_,1) => print(stderr,'Y').
+    
+  
+  

@@ -1,0 +1,30 @@
+% 2017 Round 1C, Problem C, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/3274486/dashboard#s=p2&a=2
+% Core Training
+% for Small dataset
+
+import util.
+
+main() =>
+    T = readln().to_int(),
+    foreach(TC in 1..T)
+        [_N,_K] = [X.to_number() : X in readln().split()],
+        U = readln().to_number(),
+        P = [X.to_number() : X in readln().split()].sort(),
+        dc(TC,U,1,P)
+    end.
+
+dc(TC,U,Count,[P1]) =>
+    Delta = U/Count,
+    printf(stderr,"Case #%d: %f\n",TC,(P1+Delta)**Count).
+dc(TC,U,Count,[P1,P2|P]) =>
+    D = P2-P1,
+    (Count*D < U ->
+        dc(TC,U-Count*D,Count+1,[P2|P])
+    ;
+        Delta = U/Count,
+        printf(stderr,"Case #%d: %f\n",TC,(P1+Delta)**Count*prod([P2|P]))
+    ).
+    
+
+    

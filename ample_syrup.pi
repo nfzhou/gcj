@@ -1,0 +1,29 @@
+% 2017 Round 1C, Problem A, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/3274486/dashboard
+% Ample Syrup
+
+import util.
+
+main() =>
+    T = readln().to_number(),
+    foreach(I in 1..T)
+        initialize_table,
+        [N, K] = [X.to_number() : X in readln().split()],
+        Cakes = [[X.to_number() : X in readln().split()] : _ in 1..N].sort_down(),
+        pick(Cakes,(K,K),S),
+        printf(stderr, "Case #%d: %f\n", I, S)
+    end.
+
+% NOTE: it's special to select the bottom cake
+table (+,+,max)
+pick(_,0,S)  => S = 0.
+pick([[R,H]|Cakes],(K,K),S) ?=>
+    pick(Cakes,K-1,S1),
+    S = S1+pi()*R*R+2*pi()*R*H.
+pick([_|Cakes],KK@(K,K),S) =>
+    pick(Cakes,KK,S).
+pick([[R,H]|Cakes],K,S), K >= 1 ?=>
+    pick(Cakes,K-1,S1),
+    S = S1+2*pi()*R*H.
+pick([_|Cakes],K,S), K >= 1 =>
+    pick(Cakes,K,S).

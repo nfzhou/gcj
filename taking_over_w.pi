@@ -1,0 +1,59 @@
+% taking_over_w.pi (in Picat)
+% by N.F. Zhou, Dec. 2, 2015
+% https://code.google.com/codejam/contest/5224486/dashboard#s=p3
+% Problem D. Taking Over The World
+% World Finals 2015
+% to use: picat taking_over_w < input_file > output_file
+%
+
+import util.
+
+main =>
+    T = to_integer(read_line()),
+    foreach (CN in 1..T)
+        [N,M,K] = [to_integer(S) : S in read_line().split()],
+        Edges = [$edge(From,To): _ in 1..M, 
+                             [V1,V2] = [to_integer(S) : S in read_line().split()],
+                             [From,To] in [[V1,V2],[V2,V1]]],
+        cl_facts(Edges,$[edge(+,-)]),        
+        do_case(CN,N,K)
+    end.
+
+do_case(CN,N,K) =>
+    initialize_table,
+    maxof(osp(N,K,Cost),Cost),
+    printf("Case #%w: %w\n",CN,Cost).
+    
+osp(N,K,Cost) =>
+    N1 = N-1,
+    osp(0,N1,[],Min),
+
+    % filter out vertices that are not on any shortest paths
+    Set = [V : V in 1..N-2, 
+               osp(0,V,[],Min1),osp(V,N1,[],Min2),
+               Min1+Min2==Min],      
+
+    M = len(Set),
+    (M >= K -> subset(Set,M,K-1,ObsSet); ObsSet=Set),
+    osp(0,N-1,[0|ObsSet],Cost).
+
+% Subset is a subset of K elements from Set (|Set| = M).
+subset(Set,M,K,Subset), K==M => Subset = Set.
+subset(_,_M,0,Subset) => Subset = [].
+subset([E|Set],M,K,Subset) ?=> 
+    Subset = [E|SubsetR],
+    subset(Set,M-1,K-1,SubsetR).
+subset([_|Set],M,K,Subset) => 
+    subset(Set,M-1,K,Subset).    
+
+table (+,+,+,min)
+osp(To,To,_ObsSet,Cost) => Cost=0.
+osp(From,To,ObsSet,Cost) => 
+    edge(From,Next),
+    osp(Next,To,ObsSet,Cost1),
+    (membchk(From,ObsSet) ->
+        Cost = Cost1+2
+    ;
+        Cost = Cost1+1
+    ).
+    

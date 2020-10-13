@@ -1,0 +1,48 @@
+% filefixit.pi (in Picat)
+% by M. Bionchik (edited by N.F.Z.), July, 2015
+% https://code.google.com/codejam/contest/635101/dashboard#s=p0
+% Round 1B 2010
+% Problem A. File Fix-it
+%
+% to use: picat filefixit < input_file > output_file
+
+import util.   % using split/2
+
+main =>
+    T = to_int(read_line()),
+    foreach(TC in 1..T)
+        do_case(TC)
+    end.
+
+do_case(TC) =>
+    [NToken,MToken] = read_line().split(), 
+    N = to_int(NToken),
+    M = to_int(MToken),
+
+    RootDir = new_map(),    % root directory tree:
+                            % string -> map(string -> map)...
+    foreach(_ in 1..N)
+        Dir = read_line(),
+        _ = mkdir(RootDir, split(Dir,"/"), 0)  % path into subdirectories
+    end,
+
+    Mkdirs = 0,             % counter for mkdir commands
+    foreach(I in 1..M)
+        Dir = read_line(),
+        Mkdirs := Mkdirs + mkdir(RootDir, split(Dir,"/"), 0)
+    end,
+
+    writef("Case #%w: %w%n", TC, Mkdirs).
+
+
+%% mkdir:  create a given directory (as well as directories in its path, if
+%%         needed) in the current directory tree and return number of mkdir
+%%         commands used
+mkdir(_Parent, [], Acc) = Acc.
+mkdir(Parent, [Dir|Dirs], Acc) = Res, Parent.has_key(Dir) =>
+    Res = mkdir(Parent.get(Dir), Dirs, Acc).
+mkdir(Parent, [Dir|Dirs], Acc) = Res =>
+    M = new_map(),
+    Parent.put(Dir, M),
+    Res = mkdir(M, Dirs, Acc+1).
+

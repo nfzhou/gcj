@@ -1,0 +1,24 @@
+% rope_intranet.pi (in Picat)
+% authors:  Mike Bionchik, Neng-Fa Zhou
+% date:  06/16/2015
+% https://code.google.com/codejam/contest/619102/dashboard#s=p0
+% Round 1C 2010
+% Problem A. Rope Intranet
+%
+% to use: picat rope_intranet < input_file > output_file
+%
+
+main =>
+    T = read_int(stdin),
+    foreach(TC in 1..T)
+        N = read_int(stdin),
+    	Wires = {(read_int(stdin),read_int(stdin)) : _ in 1..N},
+        do_case(TC,Wires)
+    end.
+
+do_case(TC,Wires) =>
+    Count = sum([intersect(Wires[I],Wires[J]) : I in 1..len(Wires), J in I+1..len(Wires)]),
+    writef("Case #%w: %w%n", TC, Count).
+
+intersect((L1,R1),(L2,R2)) = Res, (L1>L2 && R1<R2 || L1<L2 && R1>R2) => Res = 1.
+intersect(_,_) = 0.

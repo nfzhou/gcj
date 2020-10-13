@@ -1,0 +1,32 @@
+% welcome.pi  (in Picat)
+% Declaratively solving Google Code Jam problems with Picat, PADL'15
+% Sergii Dymchenko and Mariia Mykhailova
+% http://goo.gl/qeLls4 
+% Qualification Round 2009
+% Problem C. Welcome to Code Jam
+%
+% to use: picat welcome < input_file > output_file
+%
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        Text = read_line().to_array(),
+        do_case(TC, Text)
+    end.
+
+do_case(TC, Text) =>
+    S = to_array("welcome to code jam"),
+    W = ways(Text, len(Text), S, len(S)),
+    printf("Case #%w: %04d\n", TC, W).
+
+table
+ways(_, _, _, 0) = 1.
+ways(_, 0, _, _) = 0.
+ways(Text, I, S, J) = W =>
+    if Text[I] == S[J] then
+        W = (ways(Text, I - 1, S, J) + ways(Text, I - 1, S, J - 1)) mod 10000
+    else
+        W = ways(Text, I - 1, S, J)
+    end.
+

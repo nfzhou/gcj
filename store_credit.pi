@@ -1,0 +1,23 @@
+% store_credit.pi
+% https://code.google.com/codejam/contest/351101/dashboard#s=p0
+% Qualification Round Africa 2010
+% Problem A. Store Credit
+%
+% to use: picat store_credit < input_file > output_file
+%
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        C = read_int(),
+        N = read_int(),
+        Items = {read_int() : _ in 1..N},
+        do_case(TC, C, Items)
+    end.
+
+do_case(TC, C, Items),
+   between(1, len(Items)-1, I),
+   between(I+1, len(Items), J),
+   C == Items[I]+Items[J]
+=>
+   printf("Case #%w: %w %w\n", TC, I, J).
+

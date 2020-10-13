@@ -1,0 +1,63 @@
+% watersheds.pi (in Picat)
+% by Neng-Fa Zhou, June 2, 2015
+% https://code.google.com/codejam/contest/90101/dashboard#s=p1
+% Qualification Round 2009
+% Problem B. Watersheds
+%
+% to use: picat watersheds < input_file > output_file
+%
+% Thanks to Mike Bionchik for bring this problem to my attention.
+%
+% This program well demonstrates the features of Picat, including
+% logic variables, loops, list comprehensions, and assignments.
+%
+
+main =>
+    T = read_int(stdin),        %% number of test cases.
+    foreach (I in 1..T)
+        do_case(I)
+    end.
+
+do_case(Case) =>
+    H = read_int(stdin),        %% height
+    W = read_int(stdin),        %% width
+    % read matrix
+    InMatrix = new_array(H,W),
+    foreach(Row in 1..H, Col in 1..W)      
+        InMatrix[Row,Col] = read_int(stdin)
+    end,
+    %% decide flows
+    BasinMatrix = new_array(H,W),
+    foreach(Row in 1..H, Col in 1..W)
+        flow(Row,Col,H,W,InMatrix,BasinMatrix)
+    end,
+    %% label cells
+    Label = ord(a),
+    foreach(Row in 1..H, Col in 1..W)
+        if var(BasinMatrix[Row,Col]) then
+            BasinMatrix[Row,Col] = Label,
+            Label := Label+1
+        end
+    end,
+    %% output
+    printf("Case #%w:%n", Case), 
+    foreach(Row in 1..H)
+        foreach(Col in 1..W)
+            printf("%w ", chr(BasinMatrix[Row,Col]))
+        end,
+        nl
+    end.
+
+%% find the neighbor with the lowest altitude
+flow(Row,Col,1,1,_InMatrix,_BasinMatrix) => true.
+flow(Row,Col,H,W,InMatrix,BasinMatrix) =>
+    {LAlt,LRow,LCol} = min([{InMatrix[Row1,Col1],Row1,Col1} : 
+                            (Row1,Col1) in [(Row-1,Col),    % north
+                                            (Row,Col-1),    % west
+                                            (Row,Col+1),    % east
+                                            (Row+1,Col)],   % south
+                             Row1 >= 1, Row1 =< H, Col1 >= 1, Col1 =< W]),
+    if LAlt  < InMatrix[Row,Col] then
+        BasinMatrix[LRow,LCol] = BasinMatrix[Row,Col]
+    end.
+

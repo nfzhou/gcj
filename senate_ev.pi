@@ -1,0 +1,45 @@
+% https://code.google.com/codejam/contest/4314486/dashboard
+% Problem A. Senate Evacuation
+% Round 1C, Problem A, in Picat, by Afa Zhou
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        N = read_line().to_int(),
+        Ps = [to_int(Token) : Token in read_line().split()],
+        dc(TC,N,Ps)                        
+    end.
+
+dc(TC,N,Ps) =>
+    PLs = [Pair : Pair in zip(Ps,1..N)].sort_down(),
+    Total = sum(Ps),
+    printf("Case #%w: ", TC),
+    ev(PLs,Total).
+
+ev([],_l) => nl.
+ev([{0,_}|_],_) => nl.
+ev([{P1,L1},{P2,L2}|PLs],Total),
+    PLs1 = [{P1-1,L1},{P2-1,L2}|PLs].sort_down(),
+    safe(PLs1,Total-2)
+ =>
+    pr(L1),pr(L2),print(' '),
+    ev(PLs1,Total-2).    
+ev([{P,L}|PLs],Total) =>
+    pr(L),print(' '),
+    (P-1 == 0 -> PLs1 = PLs; PLs1 = [{P-1,L}|PLs].sort_down()),
+    ev(PLs1,Total-1).
+
+safe(PLs,Total) =>
+    foreach({P,_} in PLs)
+         P =< Total div 2
+    end.
+
+pr(L) =>
+    C = ord('A')+L-1,
+    print(chr(C)).
+    
+
+    
+    

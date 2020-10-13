@@ -1,0 +1,34 @@
+% prisoner.pi (in Picat)
+% Declaratively solving Google Code Jam problems with Picat, PADL'15
+% Sergii Dymchenko and Mariia Mykhailova
+% http://goo.gl/pSbrTk 
+% Round 1C 2009
+% Problem C. Bribe the Prisoners
+%
+% to use: picat prisoner < input_file > output_file
+%
+
+main =>
+    C = read_int(),
+    foreach (Case_num in 1..C)
+        P = read_int(), Q = read_int(),
+        FreeList = [read_int() : _ in 1..Q],
+        do_case(Case_num, P, FreeList)
+    end.
+
+do_case(Case_num, P, FreeList) =>
+    cost(1, P, FreeList, Cost),
+    printf("Case #%w: %w\n", Case_num, Cost).
+
+table (+, +, +, min)
+cost(A, B, FreeList, Cost),
+    not (member(X,FreeList),X>=A, X=<B)
+=>
+    Cost = 0.
+cost(A, B, FreeList, Cost) =>
+    member(X, FreeList),
+    X >= A, X =< B,
+    cost(A, X - 1, FreeList, CostLeft),
+    cost(X + 1, B, FreeList, CostRight),
+    Cost = B - A + CostLeft + CostRight.
+

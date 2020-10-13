@@ -1,0 +1,49 @@
+% 2017 Round 2, Problem A, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/5314486/dashboard
+% Fresh Chocolate
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [_N,P] = [to_int(Token) : Token in read_line().split()],
+        G = [to_int(Token) : Token in read_line().split()],
+        dc(G,P,F),
+        printf("Case #%w: %w\n", TC, F)
+    end.
+
+dc(G,P,F) =>
+    Rs = [E mod P : E in G].sort(),
+    Z = sum([1 : 0 in Rs]),
+    Rs1 = delete_all(Rs,0),
+    A = new_array(P-1),
+    bind_vars(A,0),
+    update_group(Rs1,A),
+    schedule(0,A,P,F1),
+    F = F1+Z.
+
+update_group([],_A) => true.
+update_group([R|Rs],A) =>
+    A[R] := A[R]+1,
+    update_group(Rs,A).
+
+table (+,+,+,max)
+schedule(_L,A,_P,F),
+    foreach (I in 1..len(A))
+        A[I] == 0
+    end
+=>
+    F = 0.
+schedule(L,A,P,F) =>
+    between(1,len(A),I),
+    A[I] !== 0,
+    A1 = copy_term(A),
+    A1[I] := A1[I] - 1,
+    L1 = (L+I) mod P,
+    schedule(L1,A1,P,F1),
+    (L == 0 -> F = F1+1; F = F1).
+     
+    
+  
+  

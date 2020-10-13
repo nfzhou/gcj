@@ -1,0 +1,75 @@
+% egg_drop.pi (in Picat)
+% by N.F. Zhou, Jan. 24, 2016
+% https://code.google.com/codejam/contest/32003/dashboard#s=p2
+% Practice Problems
+% Problem C. Egg Drop
+%
+% to use: picat egg_drop < input_file > output_file
+%
+
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        F = read_int(), D = read_int(), B = read_int(),
+        do_case(TC, F, D, B)
+    end.
+
+do_case(TC, F, D, B) =>
+    MF = max_f(D, B),
+    min_d(F, MD, B),
+    min_b(F, D, MB),
+    printf("Case #%w: %w %w %w\n", TC, MF, MD, MB).
+    
+% maximize F for given D and B
+max_f(D, B) = F, D >= 100000, B >= 2 =>  F = -1.
+max_f(D, B) = F, D >= 10000, B >= 3 =>  F = -1.
+max_f(D, B) = F, D >= 1000, B >= 4 =>  F = -1.
+max_f(D, B) = F, B > D => F = max_f(D, D).
+max_f(D, B) = f(D, B).
+
+table
+f(_, 0) =  0.
+f(D, 1) =  D.
+f(0, _) =  0.
+f(1, _) =  1.
+f(D, B) =  F =>
+    F1 = f(D-1,B),
+    F2 = f(D-1,B-1),
+    if F1 == -1 ; F2 == -1 then
+        F = -1
+    else
+        F0 = F1+F2+1,
+        F = cond(F0 >= 2**32, -1, F0)
+    end.
+
+% minimize D for given F and B
+min_d(F, D, B) =>
+    bsearch_d(0, F, F, D, B).
+
+bsearch_d(From, To, F, D, B), From >= To => 
+    D = cond((max_f(From, B) >= F ; max_f(From, B) == -1), From, From+1).
+bsearch_d(From, To, F, D, B) =>
+    Mid = (From+To) div 2,
+    if max_f(Mid, B) == F then
+        D = Mid
+    elseif max_f(Mid, B) == -1 ; max_f(Mid, B) > F then
+        bsearch_d(From, Mid-1, F, D, B)
+    else
+        bsearch_d(Mid+1, To, F, D, B)    
+    end.
+
+% minimize B for given F and D
+min_b(F, D, B) =>
+    bsearch_b(0, F, F, D, B).
+
+bsearch_b(From, To, F, D, B), From >= To => 
+    B = cond((max_f(D, From) >= F ; max_f(D, From) == -1), From, From+1).
+bsearch_b(From, To, F, D, B) =>
+    Mid = (From+To) div 2,
+    if max_f(D, Mid) == F then
+        B = Mid
+    elseif max_f(D, Mid) == -1 ; max_f(D, Mid) > F then
+        bsearch_b(From, Mid-1, F, D, B)
+    else
+        bsearch_b(Mid+1, To, F, D, B)    
+    end.

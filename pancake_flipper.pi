@@ -1,0 +1,37 @@
+% 2017 Qualification Round, Problem A, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/3264486/dashboard#s=p0
+% Oversized Pancake Flipper
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [Str,KStr] = read_line().split(),
+        K = to_int(KStr),
+        dc(TC,Str,len(Str),K,0)                        
+    end.
+
+dc(TC,Str,Len,K,N), Len < K =>
+    (string_of(Str,'+') ->
+        printf("Case #%w: %w\n", TC, N)
+    ;
+        printf("Case #%w: IMPOSSIBLE\n", TC)
+    ).
+dc(TC,['+'|Str],Len,K,N) =>
+    dc(TC,Str,Len-1,K,N).
+dc(TC,[_|Str],Len,K,N) =>
+    divide(Str,K-1,L1,L2),
+    flip(L1,FL1),
+    dc(TC,FL1++L2,Len-1,K,N+1).
+
+divide(L,0,L1,L2) => L1 = [], L2 = L.
+divide([H|L],N,L1,L2) => L1 = [H|L1R], divide(L,N-1,L1R,L2).
+
+string_of([],_) => true.
+string_of([Ch|Str],Ch) =>
+    string_of(Str,Ch).
+
+flip(L,FL) => FL = [cond(Ch=='+','-','+') : Ch in L].
+
+    

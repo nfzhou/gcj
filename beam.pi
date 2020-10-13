@@ -1,0 +1,100 @@
+% 2017 Round 2, Problem C, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/5314486/dashboard#s=p2&a=2
+% Beaming With Joy
+
+import util, sat.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [R,C] = [to_int(Token) : Token in read_line().split()],
+        M = new_array(R),
+        foreach (I in 1..R)
+            M[I] = read_line().to_array()
+        end,
+        dc(TC,R,C,M)
+    end.
+
+dc(TC,R,C,M) ?=>
+    G = new_array(R,C),
+    foreach (I in 1..R, J in 1..C)
+        G[I,J] = {B,DirL,DirR,DirU,DirD}
+    end,
+    foreach (I in 1..R, J in 1..C, (M[I,J] == '-' ; M[I,J] == '|'))
+        G[I,J] = {0,DirH,DirH,DirV,DirV},  % B=0, a shooter receives no beam
+        [DirH,DirV] :: 0..1,
+        DirH + DirV #= 1,
+        reach(up,I-1,J,DirV,R,C,M,G),
+        reach(down,I+1,J,DirV,R,C,M,G),
+        reach(left,I,J-1,DirH,R,C,M,G),
+        reach(right,I,J+1,DirH,R,C,M,G)
+    end,
+    foreach (I in 1..R, J in 1..C)
+        G[I,J] = {B,DirL,DirR,DirU,DirD},
+        (dvar(DirL) -> true; DirL = 0),
+        (dvar(DirR) -> true; DirR = 0),
+        (dvar(DirU) -> true; DirU = 0),
+        (dvar(DirD) -> true; DirD = 0),
+        (M[I,J] == '.' -> B = 1; true),
+        (#~DirL #/\ #~DirR #/\ #~DirU #/\ #~DirD) #=> #~B
+    end,
+    solve(G),
+    printf("Case #%w: POSSIBLE\n", TC),
+    foreach (I in 1..R, J in 1..C)
+        ((M[I,J] == '-' || M[I,J] == '|') ->
+            G[I,J] = {_B,DirL,_,_,_},
+            (DirL == 1 -> Cell = '-'; Cell ='|')
+        ;
+            Cell = M[I,J]
+        ),
+        printf("%c",Cell),
+        (J == C -> nl; true)
+    end.
+dc(TC,_R,_C,_M) =>
+    printf("Case #%w: IMPOSSIBLE\n", TC).
+
+reach(D,I,J,Dir,R,C,M,G), I >= 1, I =< R, J >= 1, J =< C =>
+    next(M[I,J],D,I,J,Dir,R,C,M,G).
+reach(D,I,J,Dir,R,C,M,G) => true.
+
+next('#',D,I,J,Dir,R,C,M,G) => true.
+next('/',D,I,J,Dir,R,C,M,G) => 
+    change_d('/',D,NextD),
+    next('.',NextD,I,J,Dir,R,C,M,G).
+next('\\',D,I,J,Dir,R,C,M,G) =>
+    change_d('\\',D,NextD),
+    next('.',NextD,I,J,Dir,R,C,M,G).
+next('-',D,I,J,Dir,R,C,M,G) =>
+    Dir = 0.    % can't choot a chooter
+next('|',D,I,J,Dir,R,C,M,G) =>
+    Dir = 0.    % can't choot a chooter
+next('.',D,I,J,Dir,R,C,M,G) =>
+    next_dir(D,G[I,J],NextDir),
+    (dvar(NextDir) ->                        % dvar(NextDir) means this cell has been visited
+        true
+    ;
+        Dir = NextDir,
+        next_pos(D,I,J,I1,J1),
+        reach(D,I1,J1,Dir,R,C,M,G)
+    ).
+
+next_pos(up,I,J,I1,J1) => I1 = I-1, J1 = J.
+next_pos(down,I,J,I1,J1) => I1 = I+1, J1 = J.
+next_pos(left,I,J,I1,J1) => I1 = I, J1 = J-1.
+next_pos(right,I,J,I1,J1) => I1 = I, J1 = J+1.
+
+index (+,+,-)
+change_d('/',left,down).
+change_d('/',right,up).
+change_d('/',up,right).
+change_d('/',down,left).
+change_d('\\',left,up).
+change_d('\\',right,down).
+change_d('\\',up,left).
+change_d('\\',down,right).
+
+next_dir(left,{_,DirL,DirR,DirU,DirD},NextDir) => NextDir = DirL.
+next_dir(right,{_,DirL,DirR,DirU,DirD},NextDir) => NextDir = DirR.
+next_dir(up,{_,DirL,DirR,DirU,DirD},NextDir) => NextDir = DirU.
+next_dir(down,{_,DirL,DirR,DirU,DirD},NextDir) => NextDir = DirD.
+

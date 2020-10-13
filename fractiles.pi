@@ -1,0 +1,22 @@
+% https://code.google.com/codejam/contest/6254486/dashboard#s=p3
+% Qualification Round 2016, Problem D. Fractiles
+% Picat, Afa Zhou
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [K,C,S] = [to_int(Token) : Token in read_line().split()],
+        printf("Case #%w:", TC),
+        do_case(K,C,S)            
+    end.
+
+do_case(K,C,S) =>
+    I = 1,
+    foreach (_ in 1..S)
+        printf(" %w", I),
+        I := I+K*(C-1)+1
+    end,
+    nl.
+

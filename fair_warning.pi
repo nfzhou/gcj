@@ -1,0 +1,28 @@
+% fair_warning.pi (in Picat)
+% by N.F. Zhou, Jan. 2, 2016
+% https://code.google.com/codejam/contest/433101/dashboard#s=p1&a=1
+% Qualification Round 2010
+% Problem B. Fair Warning
+%
+% to use: picat fair_warning < input_file > output_file
+%
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        do_case(TC)
+    end.
+
+do_case(TC) =>
+    N = read_int(),
+    Ts = [read_int() : _ in 1..N],
+    Ts = [T1|TsR],
+    Ds = [abs(Ti-T1) : Ti in TsR],
+    gcd_lst(Ds) = G,
+    M = T1 div G,
+    (M*G == T1 -> Y = 0; Y = (M+1)*G-T1),
+    printf("Case #%w: %w\n",TC, Y).
+
+gcd_lst([A]) = A.
+gcd_lst([A,B]) = gcd(A,B).
+gcd_lst([A,B|Lst]) = gcd_lst([gcd(A,B)|Lst]).
+

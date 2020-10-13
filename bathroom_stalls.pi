@@ -1,0 +1,35 @@
+% 2017 Qualification Round, Problem C, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/3264486/dashboard#s=p2
+% Bathroom Stalls
+ 
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [N,K] = [to_int(Token) : Token in read_line().split()],
+        dc([(N,1)],K,Ls,Rs),
+        printf("Case #%w: %w %w\n", TC,Rs,Ls)
+    end.
+
+dc([(N,T)|_],K,Ls,Rs), T >= K =>
+    dist(N,Ls,Rs).
+dc([(N,T)|Ns],K,Ls,Rs) =>
+    dist(N,DistL,DistR),
+    Ns1 = Ns.my_insert(DistR,T).my_insert(DistL,T),
+    dc(Ns1,K-T,Ls,Rs).
+
+my_insert(Ns,0,_) = Ns.
+my_insert([(N,T)|Ns],N,T1) = [(N,T+T1)|Ns].
+my_insert([NT@(N,_)|Ns],N1,T1) = Ns1, N > N1 =>
+   Ns1 = [NT|my_insert(Ns,N1,T1)].
+my_insert(Ns,N,T) = [(N,T)|Ns].
+
+dist(1,Ls,Rs) =>
+    Ls = 0, Rs = 0.
+dist(N,Ls,Rs), even(N) =>
+    Rs = N div 2, Ls = Rs-1.
+dist(N,Ls,Rs) =>
+    Rs = N div 2, Ls = Rs.
+
+

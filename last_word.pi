@@ -1,0 +1,23 @@
+% https://code.google.com/codejam/contest/4304486/dashboard
+% Problem A. The Last Word
+% Round 1A, Problem A, in Picat, by Afa Zhou
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        S = read_line(),
+        do_case(TC,S)                        
+    end.
+
+do_case(TC,S) =>
+    arrange(TC,S,'A',[],[]).
+    
+
+arrange(TC,[],_LC,S1,S2) => 
+    printf("Case #%w: %s\n", TC,S1++reverse(S2)).
+arrange(TC,[C|S],LC,S1,S2), C @>= LC =>
+    arrange(TC,S,C,[C|S1],S2).
+arrange(TC,[C|S],LC,S1,S2) =>
+    arrange(TC,S,LC,S1,[C|S2]).
+
+

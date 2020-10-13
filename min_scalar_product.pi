@@ -1,0 +1,25 @@
+% min_scalar_product.pi (in Picat)
+% by M. Bionchik, July, 2015
+% https://code.google.com/codejam/contest/32016/dashboard#s=p0
+% Round 1A 2008
+% Problem A. Minimum Scalar Product
+%
+% to use: picat min_scalar_product < input_file > output_file
+%
+
+% The intuition is as follows:  if we're to get the minimum scalar product, we
+% must multiply the largest numbers by the smallest numbers so that the sum of
+% products is minimized.
+
+main =>
+    T = read_int(),
+    foreach (I in 1..T)
+        do_case(I)
+    end.
+
+do_case(Case) =>
+    N = read_int(),
+    V1 = [read_int() : _ in 1..N].sort(),
+    V2 = [read_int() : _ in 1..N].sort_down(),
+    Prod = sum([E1*E2 : {E1,E2} in zip(V1,V2)]),
+    printf("Case #%w: %w%n", Case, Prod).

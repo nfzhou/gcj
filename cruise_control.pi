@@ -1,0 +1,36 @@
+% 2017 Round 1B, Problem A, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/8294486/dashboard#s=p0
+% Steed 2: Cruise Control
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [D,N] = [to_int(Token) : Token in read_line().split()],
+        KS = [(to_int(KToken),to_int(SToken)) : _ in 1..N, [KToken,SToken] = read_line().split()].sort(),
+        once dc(KS,D,Time),
+        printf("Case #%w: %.6f\n", TC, D/Time)
+    end.
+
+dc([(K,S)],D,T) =>
+    T = (D-K)/S.
+dc([(K1,S1),(K2,S2)|KS],D,T),
+    S1 > S2
+=>
+    K = (K1*S2-K2*S1)/(S2-S1),
+    T1 = (K-K1)/S1,    
+    (K < D ->
+        K22 = K-T1*S2,
+        dc([(K22,S2)|KS],D,T)
+    ;
+        dc([(K1,S1)|KS],D,T)
+    ).
+dc([P,_|KS],D,T) =>
+    dc([P|KS],D,T).
+  
+     
+     
+    
+  
+  

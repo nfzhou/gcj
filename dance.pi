@@ -1,0 +1,40 @@
+% Code Jam to I/O 2016 for Women, Problem B. Dance Around The Clock
+% https://code.google.com/codejam/contest/8274486/dashboard#s=p1
+% in Picat, by N.F. Zhou, 04/23/2016
+
+% to use: dance < input_file > output_file
+
+import util, mip.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [D,K,N] = [to_int(Token) : Token in read_line().split()],
+        do_case(TC,D,K-1,N)                        
+    end.
+
+do_case(TC,D,K,N), even(K) =>
+    printf(stderr,"Case #%w: ", TC),
+    [L,L1,R,R1] :: 0..D-1,
+    Mod = N mod D,
+    K1 = (K+Mod) mod D,
+    L1 #= (L - Mod) mod D,
+    R1 #= (R - Mod) mod D,
+    L1 #= (K1+1) mod D,
+    R1 #= (K1-1) mod D,    
+    solve([L1,R1]),
+    printf(stderr,"%w %w\n",L+1,R+1).
+do_case(TC,D,K,N) =>
+    printf(stderr,"Case #%w: ", TC),
+    [L,L1,R,R1] :: 0..D-1,
+    Mod = N mod D,
+    K1 = (K-Mod) mod D,
+    L1 #= (L + Mod) mod D,
+    R1 #= (R + Mod) mod D,
+    L1 #= (K1+1) mod D,
+    R1 #= (K1-1) mod D,    
+    solve([L1,R1]),
+    printf(stderr,"%w %w\n",L+1,R+1).
+    
+    
+

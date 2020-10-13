@@ -1,0 +1,46 @@
+% alien_numbers.pi (in Picat)
+% by N.F. Zhou, Jan. 24, 2016
+% https://code.google.com/codejam/contest/32003/dashboard#s=p0
+% Practice Problems
+% Problem A. Alien Numbers
+%
+% to use: picat alien_numbers < input_file > output_file
+%
+import util.  % use split
+
+main =>
+    T = to_int(read_line()),
+    foreach (TC in 1..T)
+        [Num,SDs,TDs] = read_line().split(),
+        do_case(TC, Num, SDs, TDs)
+    end.
+
+do_case(TC, Num, SDs, TDs) =>
+    SMap = new_map(),
+    SBase = len(SDs),
+    foreach ({D, DVal} in zip(SDs, 0..SBase-1))
+        SMap.put(D,DVal)
+    end,
+    source_to_decimal(Num, SBase, SMap, 0, SVal),    
+    %
+    TMap = new_map(),
+    TBase = len(TDs),    
+    foreach ({D, DVal} in zip(TDs, 0..TBase-1))
+        TMap.put(DVal,D)
+    end,
+    decimal_to_target(SVal, TBase, TMap, TNum),
+    printf("Case #%w: %s\n", TC, TNum).
+
+source_to_decimal([], _Base, _Map, Val0, Val) => Val = Val0.
+source_to_decimal([D|Ds], Base, Map, Val0, Val) =>
+    source_to_decimal(Ds, Base, Map, Val0*Base+Map.get(D), Val).
+
+decimal_to_target(0, _Base, Map, Num) => Num = [Map.get(0)].
+decimal_to_target(Val, Base, Map, Num) => 
+    Ds = [],
+    while (Val !== 0)
+        DVal := Val mod Base,
+        Val := Val div Base,
+        Ds := [Map.get(DVal)|Ds]
+    end,
+    Num = Ds.

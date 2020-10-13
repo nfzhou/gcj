@@ -1,0 +1,42 @@
+% https://code.google.com/codejam/contest/11254486/dashboard#s=p0
+% Problem A. Getting the Digits
+% Round 1B, Problem A, in Picat, by Afa Zhou
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        S = read_line(),
+        printf("Case #%w: ", TC),
+        dc(S,["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"],Ds),
+        foreach (D in Ds)
+            printf("%w", D)
+        end,
+        nl
+    end.
+
+dc([],_,Os) => Os=[].
+dc(S,Ds@[D|_],Os),
+    match(S,S1,D)
+?=>
+    d(D,A),
+    Os = [A|OsR],
+    dc(S1,Ds,OsR).
+dc(S,[_|Ds],Os) =>
+    dc(S,Ds,Os).
+
+match(S,SR,[]) => S=SR.
+match(S,SR,[C|D]) =>
+    once select(C,S,S1),
+    match(S1,SR,D).
+    
+index (+,-)
+d("ZERO",0).
+d("ONE",1).
+d("TWO",2).
+d("THREE",3).
+d("FOUR",4).
+d("FIVE",5).
+d("SIX",6).
+d("SEVEN",7).
+d("EIGHT",8).
+d("NINE",9).

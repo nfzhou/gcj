@@ -1,0 +1,36 @@
+% bot_trust.pi (in Picat)
+% by B.Y. Zhou, Jan. 2, 2016
+% https://code.google.com/codejam/contest/975485/dashboard#s=p0
+% Qualification Round 2011
+% Problem A. Bot Trust
+%
+% to use: picat bot_trust < input_file > output_file
+%
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        do_case(TC)
+    end.
+
+do_case(TC) =>
+    Op = 1, % Last orange robot position
+    Ot = 0, % Last orange robot update
+    Bp = 1, % Last blue robot position
+    Bt = 0, % Last blue robot update
+    Tt = 0, % Total time elapsed
+    N = read_int(),
+
+    foreach(I in 1..N)
+        Trn = read_char(),
+        Pos = read_int(),
+        if Trn == 'O' then % Orange turn
+            Tt := Tt + 1 + max(abs(Op - Pos) - (Tt - Ot), 0),
+            Ot := Tt,
+            Op := Pos
+        else % Blue turn
+            Tt := Tt + 1 + max(abs(Bp - Pos) - (Tt - Bt), 0),
+            Bt := Tt,
+            Bp := Pos
+        end
+    end,
+    printf("Case #%w: %w\n",TC, Tt).

@@ -1,0 +1,14 @@
+import os.
+
+main =>
+    Files = listdir("."),
+    foreach (File in Files, append(MainFile,".pi",File), 
+	    MainFile !== "gen_test", MainFile !== "gen_html", MainFile !== "bot_trust2",
+		MainFile !== "alien_language2", MainFile !== "store_credit2")
+        printf("echo %s\n",MainFile),
+        printf("/cygdrive/c/BProlog/Emulator/picat.exe %s < %s_small.txt > t_out\n",MainFile,MainFile),
+%		printf("dos2unix t_out %s_small.out\n",MainFile),
+		printf("diff t_out %s_small.out\n",MainFile)
+    end.
+
+	

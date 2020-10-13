@@ -1,0 +1,67 @@
+% https://code.google.com/codejam/contest/6254486/dashboard#s=p2
+% Qualification Round 2016, Problem C. Coin Jam
+% Picat, Afa Zhou
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [N,J] = [to_int(Token) : Token in read_line().split()],
+        printf("Case #%w:\n", TC),
+        do_case(N,J)            
+    end.
+
+do_case(N,J) =>
+    MinStr = ['1'] ++ ['0' : _ in 1..N-2] ++ ['1'],
+    MaxStr = ['1' : _ in 1..N],
+    Min2 = parse_radix_string(MinStr,2),
+    Max2 = parse_radix_string(MaxStr,2),
+    Map = get_global_map(),
+    Map.put(j,J),
+    HalfN = N div 2,
+    between (Min2,Max2,2,Val2),
+    Str = to_binary_string(Val2),
+    Str1 = new_list(HalfN),
+    once append(Str1,Str2,Str),
+    f(Str1,Str2,HalfN,2,F2),
+    f(Str1,Str2,HalfN,3,F3),
+    f(Str1,Str2,HalfN,4,F4),
+    f(Str1,Str2,HalfN,5,F5),
+    f(Str1,Str2,HalfN,6,F6),
+    f(Str1,Str2,HalfN,7,F7),
+    f(Str1,Str2,HalfN,8,F8),
+    f(Str1,Str2,HalfN,9,F9),
+    f(Str1,Str2,HalfN,10,F10),
+    printf("%s %w %w %w %w %w %w %w %w %w\n",Str,F2,F3,F4,F5,F6,F7,F8,F9,F10),
+    J1 = Map.get(j),
+    if J1 == 1 then 
+        halt
+    else
+        Map.put(j,J1-1),
+        fail
+    end.
+
+between(From,To,_Step,_X), From>To => fail.
+between(From,_To,_Step,X) ?=> X=From.
+between(From,To,Step,X) => 
+    between(From+Step,To,Step,X).
+
+table 
+tab_pow(Base,Len) = Base**Len.
+
+f(Str1,Str2,HalfN,Base,F) =>
+    once f_aux(Str1,Str2,HalfN,Base,F).
+
+f_aux(Str1,Str2,HalfN,Base,F) =>
+    Val1 = parse_radix_string(Str1,Base),
+    Coe = tab_pow(Base,HalfN),
+    Val2 = parse_radix_string(Str2,Base),
+    (factor(Val1,F); factor(Coe,F)),
+    factor(Val2,F).
+
+table
+factor(V,F) ?=>
+    between(2,floor(sqrt(V)),F),
+    V mod F == 0.
+factor(V,F) => F = V.

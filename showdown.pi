@@ -1,0 +1,70 @@
+% Round 2 2016
+% https://code.google.com/codejam/contest/10224486/dashboard
+% in Picat, by N.F. Zhou, 11/03/2016
+
+% to use: picat showdown < input_file > output_file
+
+import sat, util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [N,R,P,S] = [to_int(Token) : Token in read_line().split()],
+        not not do_case(TC,N,R,P,S)                        
+    end.
+
+do_case(TC,N,R,P,S) ?=>
+    M = 2**N,
+    Row = new_list(M),
+    Row :: 0..2,   
+    global_cardinality(Row,$[0-P, 1-R, 2-S]),
+    has_winner(Row,M),
+    solve(Row),
+    lineup(Row,1,Lineup),
+    printf("Case #%w: ", TC),
+    foreach (E in Lineup)
+        print(cond(E==0, 'P', cond(E==1, 'R', 'S')))
+    end,
+    nl.
+do_case(TC,_N,_R,_P,_S) =>
+    printf("Case #%w: IMPOSSIBLE\n", TC).
+
+has_winner([_],_) => true.
+has_winner([C1,C2],_) => C1 #< C2.
+has_winner(Row,M) =>
+    M2 = M div 2,
+    Row1 = new_list(M2),
+    Row1 :: 0..2,
+    compete(Row,Row1),
+    has_winner(Row1,M2).
+
+compete([],_) => true.
+compete([C1,C2,C3,C4|Row],[W1,W2|Row1]) =>
+    Table = [{0,1,0},
+             {0,2,2},
+             {1,0,0},
+             {1,2,1},
+             {2,0,2},
+             {2,1,1}],
+    table_in({C1,C2,W1}, Table),
+    table_in({C3,C4,W2}, Table),
+    W1 #< W2,
+    compete(Row,Row1).
+
+lineup(Row,ChunkSize,Lineup) =>
+    chunks_of(Row,ChunkSize) = Chunks,
+    (Chunks = [_] ->
+        Lineup = Row
+    ;
+        rearrange(Chunks,Chunks1),
+        lineup(flatten(Chunks1),ChunkSize*2,Lineup)
+    ).
+
+rearrange([],NewChunks) => NewChunks = [].
+rearrange([Chunk1,Chunk2|Chunks],NewChunks), Chunk1 @< Chunk2 =>
+    NewChunks = [Chunk1,Chunk2|NewChunksR],
+    rearrange(Chunks,NewChunksR).
+rearrange([Chunk1,Chunk2|Chunks],NewChunks) =>
+    NewChunks = [Chunk2,Chunk1|NewChunksR],
+    rearrange(Chunks,NewChunksR).
+
