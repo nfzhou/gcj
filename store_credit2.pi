@@ -1,0 +1,29 @@
+% store_credit.pi
+% https://code.google.com/codejam/contest/351101/dashboard#s=p0
+% Qualification Round Africa 2010
+% Problem A. Store Credit
+%
+% to use: picat store_credit < input_file > output_file
+%
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        C = read_int(),
+        N = read_int(),
+        Items = {read_int() : _ in 1..N},
+        Map = new_map(),
+        foreach (I in N..-1..1)
+            Is = Map.get(Items[I], []),
+            Map.put(Items[I],[I|Is])
+        end,
+        do_case(TC, C, Items, Map)
+    end.
+
+do_case(TC, C, Items, Map),
+   between(1, len(Items)-1, I),
+   Js = Map.get(C-Items[I], []),
+   member(J, Js),
+   I < J
+=>
+   printf("Case #%w: %w %w\n", TC, I, J).
+

@@ -1,0 +1,56 @@
+% theme_park.pi (in Picat)
+% by N.F. Zhou, Jan. 2, 2015
+% https://code.google.com/codejam/contest/433101/dashboard#s=p2
+% Qualification Round 2010
+% Problem C. Theme Park
+%
+% to use: picat theme_park < input_file > output_file
+%
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        do_case(TC)
+    end.
+
+do_case(TC) =>
+    initialize_table,
+    R = read_int(), K = read_int(), N = read_int(),
+    Q = {read_int() : _ in 1..N},
+    run(R,1,0,Amt,(Q,K)),
+    printf("Case #%w: %w\n",TC, Amt).
+
+run(0,_I,Amt0,Amt,_QK) => Amt = Amt0.
+run(R,I,Amt0,Amt,QK),R>=1000 =>
+    rides(1000,I,NextI,A,QK),
+    run(R-1000,NextI,Amt0+A,Amt,QK).
+run(R,I,Amt0,Amt,QK) =>
+    ride(I,NextI,A,QK),
+    run(R-1,NextI,Amt0+A,Amt,QK).
+
+table (+,+,-,-,nt)
+rides(1,I,NextI,A,QK) =>
+    ride(I,NextI,A,QK).
+rides(R,I,NextI,A,QK) =>
+    ride(I,I1,A1,QK),
+    rides(R-1,I1,NextI,A2,QK),
+    A = A1+A2.
+
+% get people in the range [I,NextI) to form one ride 
+table (+,-,-,nt)
+ride(I,NextI,A,QK) =>
+    ride_aux(I,I,NextI,0,A,QK).
+
+ride_aux(I0,I,NextI,A0,A,QK@(Q,K)) =>
+    A1 = A0+Q[I],
+    (A1 =< K ->
+        I1 = I+1,
+        (I1 > len(Q) -> I2 = 1; I2 = I1),
+        (I2 == I0 ->    % nobody can ride again in one ride
+            NextI = I2, A = A1
+        ;
+            ride_aux(I0,I2,NextI,A1,A,QK)
+        )
+    ;
+        NextI = I,
+        A = A0
+    ).

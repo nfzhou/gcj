@@ -1,0 +1,49 @@
+% osmos.pi (in Picat)
+% Declaratively solving Google Code Jam problems with Picat, PADL'15
+% Sergii Dymchenko and Mariia Mykhailova
+% http://goo.gl/0N5zB8 
+% Round 1B 2013
+% Problem A. Osmos
+%
+% to use: picat osmos < input_file > output_file
+%
+import planner.
+
+main =>
+    C = read_int(),
+    foreach (Case_num in 1..C)
+        A = read_int(), N = read_int(),
+        Others = [read_int() : _ in 1..N],
+        do_case(Case_num, A, Others)
+    end.
+
+do_case(Case_num, Armin, Others) =>
+    Limit = length(Others),
+    best_plan([Armin, sort(Others)], Limit, _Plan, Cost),
+    printf("Case #%w: %w\n", Case_num, Cost).
+
+final([_, []]) => true.
+
+action([Armin, Others], NewState, Action, Cost) ?=>
+    Others = [Min | Rest],
+    Armin > Min,
+    NewArmin is Armin + Min,
+    Action = absorb,
+    Cost = 0,
+    NewState = [NewArmin, Rest].
+action([Armin, Others], NewState, Action, Cost) ?=>
+    Others = [Min | _Rest],
+    Armin =< Min,
+    append(NewOthers, [_], Others),
+    Action = remove,
+    Cost = 1,
+    NewState = [Armin, NewOthers].
+action([Armin, Others], NewState, Action, Cost) =>
+    Others = [Min | _Rest],
+    Armin =< Min,
+    NewItem is Armin - 1,
+    NewOthers = [NewItem | Others],
+    Action = add,
+    Cost = 1,
+    NewState = [Armin, NewOthers].
+

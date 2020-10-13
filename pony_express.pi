@@ -1,0 +1,50 @@
+% 2017 Round 1B, Problem C, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/8294486/dashboard#s=p2
+% Pony Express
+
+import util.
+
+main =>
+  T = read_line().to_int(),
+  foreach (TC in 1..T)
+      [N,Q] = [to_int(Token) : Token in read_line().split()],
+      HL = [],
+      foreach (_ in 1..N)
+          HL := [[to_int(Token) : Token in read_line().split()]|HL]
+      end,
+      HA = HL.reverse().to_array(),
+      M = new_array(N),
+      foreach (I in 1..N)
+          M[I] = {to_int(Token) : Token in read_line().split()}
+      end,
+      Fs = [],
+      foreach (I in 1..N)
+          Neibs = [J : J in 1..N, M[I,J] !== -1],
+          Fs := [$neibs(I,Neibs)|Fs]
+      end,
+      cl_facts(Fs,[$neibs(+,-)]),
+      Qs = [[to_int(Token) : Token in read_line().split()] : _ in 1..Q],
+      printf("Case #%w: ", TC),
+      foreach ([U,V] in Qs)
+          [E,S] = HA[U],
+          sol(U,V,E,S,HA,M,Time),
+          printf("%.6f ", Time)
+      end,
+      nl
+  end.
+
+table (+,+,+,+,+,+,min)
+sol(U,U,E,S,HA,M,Time) => Time = 0.
+sol(U,V,E,S,HA,M,Time) ?=>
+    neibs(U,Neibs),
+    member(Next,Neibs),
+    Dist = M[U,Next],
+    E >= Dist,
+    sol(Next,V,E-Dist,S,HA,M,Time1),
+    Time = Time1+Dist/S.
+sol(U,V,_E,_S,HA,M,Time) =>
+    [E,S] = HA[U],
+    sol(U,V,E,S,HA,M,Time).
+  
+
+  

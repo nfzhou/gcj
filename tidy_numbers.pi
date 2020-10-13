@@ -1,0 +1,31 @@
+% 2017 Qualification Round, Problem B, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/3264486/dashboard#s=p1
+% Tidy Numbers
+
+import cp.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        N = read_line().to_int(),
+        dc(TC,N)                        
+    end.
+
+dc(TC,N) =>
+    DsN = [ord(Ch)-ord('0') : Ch in to_string(N)],
+    Len = len(DsN),
+    Ds = new_list(Len),
+    Ds :: 0..9,
+    foreach (I in 1..Len-1)
+        Ds[I] #=< Ds[I+1]
+    end,
+    lex_le(Ds,DsN),
+    mylab(Ds),
+    Val = sum([Ds[I]*10**P : {I,P} in zip(1..Len, Len-1..-1..0)]),
+    printf("Case #%w: %w\n", TC,Val).
+
+mylab([]) => true.
+mylab([V|Vs]) =>
+    indomain_down(V),
+    mylab(Vs).
+

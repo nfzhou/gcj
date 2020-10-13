@@ -1,0 +1,91 @@
+% always_turn_left.pi (in Picat)
+% by N.F. Zhou, Feb. 3, 2016
+% https://code.google.com/codejam/contest/32003/dashboard#s=p1
+% Practice Problems
+% Problem B. Always Turn Left
+%
+% to use: picat always_turn_left < input_file > output_file
+%
+import util.
+
+main =>
+    T = to_int(read_line()),
+    foreach (TC in 1..T)
+        [FPath,BPath] = read_line().split(),
+        once do_case(TC, FPath, BPath)
+    end.
+
+do_case(TC, [_|FPath], [_|BPath]) =>  % ignore the first walk of each path
+    Maze = new_array(100,100),
+    between(1, 100, C),
+    record_room(Maze[1,C], north),
+    walk(Maze, 1, C, EndR, EndC, south, Dir, FPath),      % begin at <1,C> facing south
+    walk(Maze, EndR, EndC, 1, C, opp(Dir), _, BPath),     % walk back
+    printf("Case #%w:\n", TC),
+    output(Maze).
+
+walk(Maze, R, C, EndR, EndC, Dir0, Dir, [_]) =>  % the last walk
+    record_room(Maze[R,C], Dir0),
+    EndR = R, EndC = C, Dir = Dir0.
+walk(Maze, R, C, EndR, EndC, Dir0, Dir, ['W'|Path]) =>  
+    Dir1 = opp(Dir0),
+    next_pos(R, C, Dir0, R1, C1),
+    record_room(Maze[R,C], Dir0),
+    record_room(Maze[R1,C1], Dir1),
+    walk(Maze, R1, C1, EndR, EndC, Dir0, Dir, Path).
+walk(Maze, R, C, EndR, EndC, Dir0, Dir, ['L'|Path]) =>  
+    Dir1 = left(Dir0),
+    walk(Maze, R, C, EndR, EndC, Dir1, Dir, Path).
+walk(Maze, R, C, EndR, EndC, Dir0, Dir, [_|Path]) =>   % turn right
+    Dir1 = right(Dir0),
+    walk(Maze, R, C, EndR, EndC, Dir1, Dir, Path).
+
+left(north) = west.
+left(south) = east.
+left(west) = south.
+left(east) = north.
+
+right(Dir) = opp(left(Dir)).
+
+opp(north) = south.
+opp(south) = north.
+opp(west) = east.
+opp(east) = west.
+
+next_pos(R, C, south, R1, C1) => R1 = R+1, C1 = C, R1 =< 100.
+next_pos(R, C, north, R1, C1) => R1 = R-1, C1 = C, R1 >= 1.
+next_pos(R, C, west, R1, C1) => R1 = R, C1 = C-1, C1 >= 1.
+next_pos(R, C, east, R1, C1) => R1 = R, C1 = C+1, C1 =< 100.
+
+record_room(Room, north) => Room = [y,_,_,_].
+record_room(Room, south) => Room = [_,y,_,_].
+record_room(Room, west) => Room = [_,_,y,_].
+record_room(Room, east) => Room = [_,_,_,y].
+
+output(Maze) =>
+    foreach(R in 1..len(Maze))
+        foreach(C in 1..len(Maze[1]))
+            Room = Maze[R,C],
+            if nonvar(Room) then 
+                bind_vars(Room, n),   % change vars to n
+                printf("%w", maze_code(Room))
+            end
+        end,
+        if nonvar(Maze[R,1]) then nl end
+    end.
+
+maze_code([y,n,n,n]) = 1.
+maze_code([n,y,n,n]) = 2.
+maze_code([y,y,n,n]) = 3.
+maze_code([n,n,y,n]) = 4.
+maze_code([y,n,y,n]) = 5.
+maze_code([n,y,y,n]) = 6.
+maze_code([y,y,y,n]) = 7.
+maze_code([n,n,n,y]) = 8.
+maze_code([y,n,n,y]) = 9.
+maze_code([n,y,n,y]) = a.
+maze_code([y,y,n,y]) = b.
+maze_code([n,n,y,y]) = c.
+maze_code([y,n,y,y]) = d.
+maze_code([n,y,y,y]) = e.
+maze_code([y,y,y,y]) = f.

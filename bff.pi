@@ -1,0 +1,33 @@
+% https://code.google.com/codejam/contest/4304486/dashboard#s=p2
+% Problem C. BFFs
+% Round 1A, Problem C, in Picat, by Afa Zhou
+
+import util,cp.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        N = read_line().to_int(),        
+        BFF = {to_int(Token) : Token in read_line().split()},
+        not not do_case(TC,N,BFF)                        
+    end.
+
+do_case(TC,N,BFF) =>
+    member(Size,N..-1..2),
+    L = new_array(Size),
+    L :: 1..N,
+    all_distinct(L),
+    foreach(I in 1..Size)
+        if I==1 then
+            Left = Size, Right = 2
+        elseif I==Size then
+            Left = Size-1, Right = 1
+        else 
+            Left = I-1, Right = I+1
+        end,
+        foreach (J in 1..N)
+            L[I] #= J #=> (L[Left] #= BFF[J] #\/ L[Right] #= BFF[J])
+        end
+    end,
+    solve(L),
+    printf("Case #%w: %w\n", TC,Size).

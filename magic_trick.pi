@@ -1,0 +1,36 @@
+% magic_trick.pi (in Picat)
+% by N.F. Zhou, Jan. 24, 2016
+% https://code.google.com/codejam/contest/2974486/dashboard
+% Qualification Round 2014
+% Problem A. Magic Trick
+%
+% to use: picat magic_trick < input_file > output_file
+%
+
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        Row1 = read_int(),
+        A1 = new_array(4,4),
+        foreach (R in 1..4, C in 1..4)
+            A1[R,C] = read_int()
+        end,
+        Row2 = read_int(),
+        A2 = new_array(4,4),
+        foreach (R in 1..4, C in 1..4)
+            A2[R,C] = read_int()
+        end,
+        count_all(common(A1,A2,Row1,Row2,Common)) = Count,
+        if Count==0 then
+            printf("Case #%w: Volunteer cheated!\n", TC)
+        else if Count==1 then 
+            common(A1,A2,Row1,Row2,Common),
+            printf("Case #%w: %d\n", TC, Common)
+        else
+            printf("Case #%w: Bad magician!\n", TC)
+        end
+    end.
+
+common(A1,A2,Row1,Row2,Common) =>
+    nth(_,A1[Row1],Common),
+    nth(_,A2[Row2],Common).

@@ -1,0 +1,48 @@
+% https://code.google.com/codejam/contest/11254486/dashboard#s=p1
+% Problem B. Close Match
+% Round 1B, Problem B, in Picat, by Afa Zhou
+
+import util, cp.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [C,J] = read_line().split(),
+        not not do_case(TC,C,J)                        
+    end.
+
+do_case(TC,C,J) =>
+    Len = len(C),
+    Vc = new_list(Len),
+    Vj = new_list(Len),
+    Vc :: 0..9,
+    Vj :: 0..9,
+    fill(Vc,C),
+    fill(Vj,J),
+    val(reverse(Vc),1,Valc),
+    val(reverse(Vj),1,Valj),
+    Diff #= abs(Valc-Valj),
+    solve($[min(Diff)],(Vc,Vj)),
+    printf("Case #%w: ", TC),
+    foreach (D in Vc)
+        printf("%d",D)
+    end,
+    print(' '),
+    foreach (D in Vj)
+        printf("%d",D)
+    end,
+    nl.
+
+fill([],[]) => true.
+fill([_V|Vs],['?'|Ds]) =>
+    fill(Vs,Ds).
+fill([V|Vs],[D|Ds]) =>
+    V = ord(D)-ord('0'),
+    fill(Vs,Ds).
+
+val([],_P,Exp) => Exp=0.
+val([D|Ds],P,Exp) =>
+    val(Ds,10*P,Exp1),
+    Exp = $(P*D+Exp1).
+
+    

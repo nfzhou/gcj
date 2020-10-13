@@ -1,0 +1,38 @@
+% https://code.google.com/codejam/contest/4304486/dashboard#s=p1
+% Problem B. Rank and File
+% Round 1A, Problem B, in Picat, by Afa Zhou
+
+import util,cp.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+	    N = read_line().to_int(),
+        Table = [{to_int(Token) : Token in read_line().split()} : _ in 1..2*N-1],
+        not not do_case(TC,N,Table)      %% "not not Call" discards bindings and terms created by "Call"                       
+    end.
+
+do_case(TC,N,Table) =>
+    ST = sort(Table),
+    A = new_array(N,N),
+    B = transpose(A),
+    between(1,N,MI),
+    table_in([A[I] : I in 1..N, I !== MI]++[B[I] : I in 1..N], Table),
+    foreach(I in 1..N, J in 2..N)
+        A[I,J-1] #< A[I,J]
+    end,
+    foreach(J in 1..N, I in 2..N)
+        A[I-1,J] #< A[I,J]
+    end,
+    solve(A),
+    Rows = [A[I] : I in 1..N, I !== MI],
+    Cols = [B[I] : I in 1..N],
+    ST = sort(Rows++Cols),
+    printf("Case #%w: ", TC),
+    foreach (J in 1..N)
+        printf("%w ",A[MI,J])
+    end,
+    nl.
+
+
+

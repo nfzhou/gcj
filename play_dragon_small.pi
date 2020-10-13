@@ -1,0 +1,40 @@
+% 2017 Round 1A, Problem C, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/5304486/dashboard#s=p2&a=1
+% Play the Dragon
+
+import util,planner.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        L = [to_int(Token) : Token in read_line().split()],
+        L = [Hd|_],
+        State = to_array([Hd|L]),
+        (best_plan_unbounded(State,Plan) ->
+            printf("Case #%w: %w\n", TC, len(Plan))
+        ;
+            printf("Case #%w: IMPOSSIBLE\n", TC)
+        )
+    end.
+
+final({_,Hd,Ad,Hk,Ak,B,D}), Hk == 0 => true.
+
+action({Hd0,Hd,Ad,Hk,Ak,B,D}, NS,A,Cost) ?=>
+    A = a, Cost = 1,
+    Hk1 = Hk-Ad,
+    (Hk1 > 0 -> Hd1 = Hd-Ak, Hd1 > 0; Hd1 = Hd),
+    NS = {Hd0,Hd1,Ad,max(Hk1,0),Ak,B,D}.
+action({Hd0,Hd,Ad,Hk,Ak,B,D}, NS,A,Cost) ?=>
+    A = b, Cost = 1,
+    Ad+B =< Hk,
+    Hd1 = Hd-Ak, Hd1 > 0,
+    NS = {Hd0,Hd1,Ad+B,Hk,Ak,B,D}.
+action({Hd0,_Hd,Ad,Hk,Ak,B,D}, NS,A,Cost) ?=>
+    A = c, Cost = 1,
+    Hd1 = Hd0-Ak, Hd1 > 0,
+    NS = {Hd0,Hd1,Ad,Hk,Ak,B,D}.
+action({Hd0,Hd,Ad,Hk,Ak,B,D}, NS,A,Cost) =>
+    A = d, Cost = 1,
+    Ak1 = max(Ak-D,0),
+    Hd1 = Hd-Ak1, Hd1 > 0,
+    NS = {Hd0,Hd1,Ad,Hk,Ak1,B,D}.

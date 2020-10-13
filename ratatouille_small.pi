@@ -1,0 +1,45 @@
+% 2017 Round 1A, Problem B, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/5304486/dashboard#s=p1&a=1
+% Ratatouille
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [N,_P] = [to_int(Token) : Token in read_line().split()],
+        R = {to_int(Token) : Token in read_line().split()},
+        Q = [Qi : _ in 1..N, Qi = [to_int(Token) : Token in read_line().split()]],
+        dc(TC,R,Q)                        
+    end.
+
+dc(TC,R,Q) =>
+    maxof(search(Q,R,K),K),
+    printf(stderr,"Case #%w: %w\n", TC, K),
+    printf("Case #%w: %w\n", TC, K).
+
+search([[Q11|Q1Rest]|Q],R,K) ?=>
+    LB = lb(Q11,R[1]),
+    UB = ub(Q11,R[1]),
+    LB =< UB,
+    form_kit(LB,UB,Q,QRest,2,R),
+    search([Q1Rest|QRest],R,K1),
+    K = K1+1.
+search([[_|Q1Rest]|Q],R,K) =>
+    search([Q1Rest|Q],R,K).
+search(_,_R,K) => K = 0.
+
+form_kit(LB,UB,[],QRest,_I,_R) =>
+    QRest = [].
+form_kit(LB,UB,[Qi|Q],QRest,I,R) =>
+    select(Qij,Qi,QiRest),
+    LB1 = lb(Qij,R[I]),
+    UB1 = ub(Qij,R[I]),
+    LB2 = max(LB1,LB), UB2 = min(UB1,UB),
+    LB2 =< UB2,
+    QRest = [QiRest|QRestR],
+    form_kit(LB2,UB2,Q,QRestR,I+1,R).
+
+lb(Qij,Ri) = (10 * Qij + 11 * Ri - 1) // 11 // Ri.
+
+ub(Qij,Ri) = (10 * Qij ) // 9 // Ri.

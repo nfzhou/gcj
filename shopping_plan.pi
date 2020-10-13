@@ -1,0 +1,66 @@
+% shopping_plan.pi (in Picat)
+% by N.F. Zhou, Jan. 27, 2016
+% https://code.google.com/codejam/contest/32003/dashboard#s=p3
+% Practice Problems
+% Problem D. Shopping Plan
+%
+% to use: picat shopping_plan < input_file > output_file
+%
+import util.
+
+main =>
+    T = to_int(read_line()),
+    foreach (TC in 1..T)
+	    initialize_table,
+        [_NItems,NStores,GasPrice] = [to_int(Token) : Token in read_line().split()],
+        ShoppingList = [change_name(Name) : Name in read_line().split()].sort(),
+        Stores = [make_store(read_line().split(), ShoppingList) : _ in 1..NStores],
+        sp((0,0),ShoppingList,(Stores,GasPrice),Cost),
+        printf("Case #%w: %.7f\n", TC, Cost)
+    end.
+
+change_name(Name) = NewName, append(Pre, "!", Name) => 
+	NewName = ['!'|Pre].
+change_name(Name) = Name.
+
+make_store([XStr,YStr|Rest], ShoppingList) = $store(X,Y,StoreItems) =>
+    X = to_int(XStr), Y = to_int(YStr),
+    StoreItems = [(Item,Price) : Token in Rest, parse_item_price(Token, Item, Price, ShoppingList)].sort().
+
+parse_item_price(Token, Item, Price, ShoppingList) =>
+    once append(ItemStr, [':'|PriceStr], Token),
+    Price = to_int(PriceStr),
+    if member(ItemStr,ShoppingList) then
+        Item = ItemStr
+    else
+        Item = ['!'|ItemStr]    % perishable
+    end.
+    
+table (+,+,+,min)
+sp((X,Y), [], (_,GasPrice), Cost) => Cost = sqrt(X*X+Y*Y)*GasPrice.
+sp((X,Y), Items, SG@(Stores,GasPrice), Cost) => 
+    Store = $store(X1,Y1,StoreItems),
+    member(Store,Stores),
+    shop_at_store(StoreItems, Items, ItemsR, 0, Price, HasPerishable),
+    if HasPerishable == true then
+        sp((0,0), ItemsR, SG, Cost1),
+        Dist  = sqrt((X-X1)**2+(Y-Y1)**2) + sqrt(X1*X1+Y1*Y1)
+    else
+        sp((X1,Y1), ItemsR, SG, Cost1),
+        Dist  = sqrt((X-X1)**2+(Y-Y1)**2)
+    end,
+    Cost = Dist*GasPrice+Price+Cost1.
+
+% buy items at the selected store
+shop_at_store(_StoreItems, [], ItemsR, TotalPrice0, TotalPrice, _HasPerishable) =>
+    TotalPrice = TotalPrice0, ItemsR = [].
+shop_at_store(StoreItems, [Item|Items], ItemsR, TotalPrice0, TotalPrice, HasPerishable) ?=>
+    member((Item,Price),StoreItems),
+    if Item = ['!'|_] then HasPerishable = true end,
+    shop_at_store(StoreItems, Items, ItemsR, TotalPrice0+Price, TotalPrice, HasPerishable).
+shop_at_store(StoreItems, [Item|Items], ItemsR, TotalPrice0, TotalPrice, HasPerishable) =>
+    ItemsR = [Item|ItemsRR],
+    shop_at_store(StoreItems, Items, ItemsRR, TotalPrice0, TotalPrice, HasPerishable).
+
+    
+

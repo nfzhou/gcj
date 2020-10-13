@@ -1,0 +1,116 @@
+% cycles.pi
+% by N.F. Zhou, Oct., 2015
+% https://code.google.com/codejam/contest/dashboard?c=32004#s=p2
+% Practice Contest
+% Problem C. Cycles
+%
+% to use: picat cycles < input_file > output_file
+%
+/* based on the explanation posted by xan on stackoverflow:
+
+http://stackoverflow.com/questions/6038367/gcj-hamiltonian-cycles
+
+For each subset, you calculate the number of cycles that include at
+least all the edges in that subset . If the number of cycles
+containing edges s is f(s) and S is the set of all forbidden edges,
+then by the inclusion-exclusion principle, the number of cycles
+without any forbidden edges is:
+
+ sum, for each subset s of S: f(s) * (-1)^|s|
+
+where |s| is the number of elements in s. Put another way, the sum of
+the number of cycles with any edges minus the number of cycles with at
+least 1 forbidden edge plus the number with at least 2 forbidden
+edges, ...
+
+Calculating f(s) is not trivial -- at least I didn't find an easy way
+to do it. You might stop and ponder it before reading on.
+
+To calculate f(s), start with the number of permutations of the nodes
+not involved with any s nodes. If there are m such nodes, there are m!
+permutations, as you know. Call the number of permutations c.
+
+Now examine the edges in s for chains. If there are any impossible
+combinations, such as a node involved with 3 edges or a subcycle
+within s, then f(s) is 0.
+
+Otherwise, for each chain increment m by 1 and multiply c by 2m.
+(There are m places to put the chain in the existing permutations and
+the factor of 2 is because the chain can be forwards or backwards.)
+Finally, f(s) is c/(2m). The last division converts permutations to
+cycles.
+*/
+
+main =>
+    C = read_int(),
+    foreach (Case in 1..C)
+        N = read_int(), K = read_int(),
+        Edges = [(V1,V2) : _ in 1..K, V1 = read_int(), V2 = read_int(), V1 !== V2],
+        do_case(Case,N,Edges)
+    end.
+
+do_case(Case,N,Edges) =>
+    Sets = power_set(Edges),
+    Sum = 0,
+    foreach (Set in Sets)
+        Vs = [V : (V1,V2) in Set, V in [V1,V2]].sort_remove_dups(),
+        Sum := Sum+count(N,Set,len(Vs))*(-1)**len(Set)
+    end,
+    printf("Case #%w: %w\n", Case, Sum mod 9901).
+
+% number of cycles that involve all the edges in Set
+count(N,[],_) = factorial(N-1) div 2.
+count(N,Set,_) = Count, has_degree_3(Set) => Count = 0.
+count(N,Set,NumVs) = Count, has_cycle(Set,SetR) =>
+    M = N-NumVs,
+    Count = cond((M == 0,SetR==[]), 1, 0).
+count(N,Set,NumVs) = Count =>
+    M = N-NumVs,
+    C = factorial(M),
+    while (Set !== [])
+        Set := remove_a_chain(Set),
+        M := M+1,
+        C := 2*M*C
+    end,
+    Count = C div (2*M).
+
+power_set([]) = [[]].
+power_set([H|T]) = P1++P2 =>
+    P1 = power_set(T),
+    P2 = [[H|S] : S in P1].
+
+% there is a vetex that involves more than two edges
+has_degree_3(Set),
+    (append(_,[(V,_)|Set1],Set); append(_,[(_,V)|Set1],Set)),
+    (append(_,[(V,_)|Set2],Set1); append(_,[(_,V)|Set2],Set1)),
+    (append(_,[(V,_)|_],Set2); append(_,[(_,V)|_],Set2))
+=>
+    true.
+
+% there is a cycle in the set of edges
+has_cycle(Set,SetR),
+    select((V1,V2),Set,Set1),
+    (cycle(V1,V2,Set1,SetR); cycle(V2,V1,Set1,SetR))
+=>
+    true.
+
+cycle(V,V,Set,SetR) => SetR=Set.
+cycle(V1,V2,Set,SetR) =>
+    (select((V2,V2P),Set,Set1);select((V2P,V2),Set,Set1)),
+    cycle(V1,V2P,Set1,SetR).
+
+remove_a_chain([(V1,V2)|Set]) = NewSet =>
+    remove_a_chain(V1,V2,Set,NewSet).
+
+remove_a_chain(V1,V2,Set,NewSet),
+    (select((V1,V1P),Set,Set1); select((V1P,V1),Set,Set1))
+=>
+    remove_a_chain(V1P,V2,Set1,NewSet).
+remove_a_chain(V1,V2,Set,NewSet),
+    (select((V2,V2P),Set,Set1); select((V2P,V2),Set,Set1))
+=>
+    remove_a_chain(V1,V2P,Set1,NewSet).
+remove_a_chain(_V1,_V2,Set,NewSet) => NewSet = Set.
+
+
+    

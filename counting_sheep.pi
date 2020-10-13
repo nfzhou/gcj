@@ -1,0 +1,24 @@
+% Qualification Round 2016, Problem A. Counting Sheep, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/6254486/dashboard#s=p0
+
+import ordset.
+
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        N = read_int(),
+        C0 = N.to_string().sort_remove_dups(),
+        (count(N,N,C0,L) ->
+           printf("Case #%w: %w\n", TC,L)
+       ;            
+           printf("Case #%w: INSOMNIA\n", TC)
+        )
+    end.
+
+table 
+count(N,C,Ds,L), len(Ds) == 10 => L=C.
+count(N,C,Ds,L) =>
+    C1 = C+N,
+    Ds1 = union(Ds, to_string(C1).sort_remove_dups()),
+    count(N,C1,Ds1,L).
+

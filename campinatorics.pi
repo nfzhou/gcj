@@ -1,0 +1,69 @@
+% campinatorics.pi (in Picat)
+% by N.F. Zhou, Oct. 31, 2015, updated Jan. 5, 2016
+% https://code.google.com/codejam/contest/5224486/dashboard#s=p1
+% World Finals 2015
+% Problem B. Campinatorics
+%
+% to use: picat campinatorics < input_file > output_file
+% requires version 1.8 or up to solve large instances
+
+main =>
+    T = to_integer(read_line()),
+    foreach (Case in 1..T)
+        N = read_int(),
+        X = read_int(),
+        do_case(Case,N,X)
+    end.
+
+lprime = 1000000007.
+
+do_case(Case,N,X) =>
+    not not printf("Case #%w: %w\n", Case,count(N,X) mod lprime()).
+
+count(N,X) = sum([count3(N,I)*count12(N-I) mod lprime(): I in X..N]).
+
+% with exactly I 3s
+count3(_N,0) = 1.
+count3(N,I) = comb(N,I)**2 * fact(I) mod lprime().
+
+% with N {1,2}s
+count12(N) = fact(N)*deran(N) mod lprime().
+
+% choose I of N
+/* O(N*I) space - too much for the large set
+table
+comb(N,1) = N.
+comb(N,N) = 1.
+comb(N,I) = (comb(N-1,I-1) + comb(N-1,I)) mod lprime().
+*/
+% according to Fermat's little theorem: 
+%
+%        x^(p-1) = 1 (mod p) if p is prime and gcd(p,x)=1
+%        x^(-1) = x^(p-2) (mod p)
+%
+% comb(N,I) mod P = 
+%        fact(N)/(fact(N-I)*fact(I)) mod P =
+%        fact(N)*fact(N-I)^(-1)*fact(I)^(-1) mod P =
+%        (fact(N) mod P)*(fact(N-I)^(P-2) mod P)*(fact(I)^(P-2) mod P)
+%   
+comb(N,1) = N.
+comb(N,N) = 1.
+comb(N,I) = Res =>
+    Res = fact(N) * inv(N-I) * inv(I) mod lprime().
+
+table
+inv(N) = Res =>
+    P = lprime(),
+    Res = pow_mod(fact(N),P-2,P).
+
+% count derangements
+table
+deran(0) = 1.
+deran(1) = 0.
+deran(N) = (N-1)*(deran(N-1)+deran(N-2)) mod lprime().
+
+% don't use the built-in factorial because it's not tabled
+table
+fact(0) = 1.
+fact(N) = N*fact(N-1) mod lprime().
+

@@ -1,0 +1,45 @@
+% 2017 Round 1C, Problem B, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/3274486/dashboard#s=p1
+% based on the model by Alfredo Beaumont
+% https://github.com/abeaumont/programming-challenges/tree/master/google-code-jam/2017/round-1C
+% Parenting Partnering
+
+import util,mip.
+
+main() =>
+    T = readln().to_int(),
+    foreach(TC in 1..T)
+        [Ac,Aj] = [X.to_number() : X in readln().split()],
+        Acs = [[X.to_number() : X in readln().split()] : J in 1..Ac],
+        Ajs = [[X.to_number() : X in readln().split()] : J in 1..Aj],
+        once go(TC,Ac,Aj,Acs,Ajs)
+end.
+
+go(TC,Ac,Aj,Acs,Ajs) =>
+    N = 1440,
+    Bc = new_array(N),Bc :: 0..1,
+    Ex = new_array(N),Ex :: 0..1,
+    %
+    foreach (I in 1..N-1)
+        Bc[I] #/\ #~Bc[I+1] #<=> Ex[I] 
+    end,
+    Bc[N] #/\ #~Bc[1] #<=> Ex[N],
+    %    
+    foreach ([S,E] in Acs)
+        foreach (I in S+1..E)
+            Bc[I] = 0
+        end
+    end,
+    %
+    foreach ([S,E] in Ajs)
+        foreach (I in S+1..E)
+            Bc[I] = 1
+        end
+    end,
+    %
+    sum(Bc) #= 720,
+    Total #= sum(Ex),
+    Total :: 1..max(Ac,Aj),
+    solve($[min(Total)],(Bc,Ex,Total)),
+    printf(stderr,"Case #%d: %d\n",TC,2*Total).    
+    

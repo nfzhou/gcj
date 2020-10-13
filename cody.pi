@@ -1,0 +1,25 @@
+% Code Jam to I/O 2016 for Women, Problem A. Cody's Jams
+% https://code.google.com/codejam/contest/8274486/dashboard#s=p0
+% in Picat, by N.F. Zhou, 04/23/2016
+
+% to use: picat cody < input_file > output_file
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        N = read_line().to_int(),
+        Ps = [to_int(Token) : Token in read_line().split()].sort(),
+        printf("Case #%w: ", TC),
+        do_case(Ps)                        
+    end.
+
+do_case([]) => nl.
+do_case([P|Ps]) => 
+    printf("%w ", P),
+    O = P*100 div 75,
+    Ps1 = Ps.delete(O),
+    do_case(Ps1).
+    
+

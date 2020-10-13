@@ -1,0 +1,37 @@
+% https://code.google.com/codejam/contest/11254486/dashboard#s=p2
+% Problem C. Technobabble
+% Round 1B, Problem C, in Picat, by Afa Zhou
+
+import util,sat.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        N = read_line().to_int(),
+        Topics = [Topic : _ in 1..N, Topic = read_line().split()],
+        not not dc(TC,N,Topics)                        
+    end.
+
+dc(TC,N,Topics) =>
+    Map1 = new_map(),
+    Map2 = new_map(),
+    Bs = new_list(N),
+    Bs :: 0..1,
+    foreach ({[W1,W2],B} in zip(Topics,Bs))
+        regist(W1,B,Map1),
+        regist(W2,B,Map2)
+    end,
+    gen_constr(Map1),
+    gen_constr(Map2),
+    solve($[min(sum(Bs))],Bs),
+    printf(stderr,"Case #%w: %w\n", TC,N-sum(Bs)).
+
+regist(W,B,Map) =>
+    Bs = Map.get(W,[]),
+    Map.put(W,[B|Bs]).
+
+gen_constr(Map) =>
+    foreach ((_ = Bs) in Map)
+        sum(Bs) #>= 1
+    end.
+        

@@ -1,0 +1,97 @@
+import os.
+
+main =>
+    Files = listdir("."),
+	PiFiles = [File : File in Files, append(_,".pi",File), File !== "gen_html.pi", File !== "gen_solve_all_gcj.pi",  File !== "gen_test.pi"],
+	foreach (PiFile in PiFiles)
+	    append(MainFile,".pi",PiFile),
+		append(MainFile,".html",HtmlFile),
+		OutS = open(HtmlFile,write),
+		print_header(OutS,PiFiles,MainFile),
+		print_body(OutS,PiFile),
+		print_footer(OutS),
+		close(OutS)
+	end.
+
+
+print_header(OutS,PiFiles,MainFile) =>
+    Header1 =
+"
+<!DOCTYPE html>
+<html><head>
+		
+		<title>GCJ in Picat</title><link href=\"default.css\" rel=\"stylesheet\" type=\"text/css\">
+		<script type=\"text/javascript\" language=\"Javascript\" src=\"js/jquery-1.10.1.min.js\"></script>
+		<script type=\"text/javascript\" language=\"Javascript\" src=\"js/jquery-ui.min.js\"></script>		
+		<script type=\"text/javascript\" language=\"Javascript\" src=\"js/script.js\"></script></head>
+<body>
+	<div id=\"content\">
+	  <div id=\"vert_navi\">
+		<div id=\"news\">
+		<a href=\"http://picat-lang.org/gcj/index.html\"><img src=\"https://code.google.com//codejam/contest/static/logo_image0.gif\", alt=\"Google Code Jam\"></a>
+		<a href=\"http://picat-lang.org/gcj/index.html\"><img src=\"http://picat-lang.org/images/picat_type.png\", alt=\"Picat\"></a>
+		  <hr>
+		  <ul id=\"news_list\">
+			<font color=\"#000000\" face=\"Arial, Helvetica, sans-serif\" size=\"-1\">				
+",
+		print(OutS,Header1),
+		print_items(OutS,PiFiles),
+		Header2 =
+"		
+			</font><hr>
+		  </ul><!-- END NEWS_LIST -->
+		</div><!-- END NEWS -->
+	  </div><!-- END VERT_NAVI-->
+	</div><!-- END CONTENT -->
+
+	<div id=\"intro\">
+",
+		print(OutS,Header2),
+
+		printf(OutS,"<div style=\"text-align: center;\"><font size=\"+2\">%s<br></font></div>",MainFile).
+
+	    
+print_items(OutS,PiFiles) =>
+    foreach(PiFile in PiFiles)
+	    once append(MainFile,".pi",PiFile),
+		once append(MainFile,".html",HtmlFile),
+		printf(OutS,"<li><a href=\"%s\">%s</a></li>\n",HtmlFile,MainFile)
+	end.
+
+print_body(OutS,PiFile) =>
+    OutS.print("<pre> <code>\n"),
+    Lines = read_file_lines(PiFile),
+	foreach (Line in Lines)
+	    (append("% http",Rest,Line) ->
+		    OutS.printf("<a href=\"http%s\">%s</a>\n",Rest,Line)
+		;
+	        copy_line(OutS,Line)
+		)			
+	end,
+    OutS.print("</code></pre>\n").
+
+copy_line(OutS,[]) => OutS.nl().
+copy_line(OutS,['>'|L]) => 
+    OutS.print("&gt;"),
+	copy_line(OutS,L).
+copy_line(OutS,['<'|L]) => 
+    OutS.print("&lt;"),
+	copy_line(OutS,L).
+copy_line(OutS,[Char|L]) => 
+    OutS.print(Char),
+	copy_line(OutS,L).
+
+print_footer(OutS) =>
+    Footer = 
+"				   
+</div>
+<div id=\"footer\">
+  <p>
+	<a href=\"www.picat-lang.org\"> picat-lang.org </a>
+  </p>
+</div>
+<!-- END TRUNK-->
+
+</body></html>    
+",
+	OutS.println(Footer).

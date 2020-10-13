@@ -1,0 +1,45 @@
+% https://code.google.com/codejam/contest/6254486/dashboard#s=p1
+% Qualification Round 2016, Problem B. Revenge of the Pancakes
+% in Picat, by Afa Zhou
+
+import planner.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        S = read_line(),
+        best_plan(S,_,Len),
+        printf("Case #%w: %w\n", TC,Len)
+    end.
+
+final(S) =>
+    foreach(C in S) C=='+' end.
+
+action(S,NewS,Action,Cost),
+    est_cost(S) > current_resource()
+=>
+    fail.
+action(S,NewS,Action,Cost) =>
+    Action = flip, Cost = 1,                         
+    append(S1,S2,S),
+    flip(S1,[],FS1),
+    NewS = FS1++S2.
+
+flip([],FS0,FS) => FS=FS0.
+flip(['+'|S],FS0,FS) => 
+    flip(S,['-'|FS0],FS).
+flip([_|S],FS0,FS) => 
+    flip(S,['+'|FS0],FS).
+
+est_cost([C|S]) = D =>
+    est_cost(C,S,0,D).
+
+est_cost(_C,[],D0,D) => D=D0.
+est_cost(C,[C|S],D0,D) => 
+    est_cost(C,S,D0,D).
+est_cost(_,[C|S],D0,D) => 
+    est_cost(C,S,D0+1,D).
+
+
+
+

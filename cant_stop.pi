@@ -1,0 +1,91 @@
+% cant_stop.pi (in Picat)
+% by N.F. Zhou, Dec. 26, 2015
+% https://code.google.com/codejam/contest/2437491/dashboard#s=p3
+% World Finals 2013
+% Problem D. Can't Stop
+% based on the analysis: 
+% https://code.google.com/codejam/contest/2437491/dashboard#s=a&a=3
+% to use: picat cant_stop < input_file > output_file
+%
+main =>
+    T = to_int(read_line()),
+    foreach(TC in 1..T)
+        not not do_case(TC)
+    end.
+
+do_case(TC) =>
+    N = read_int(), D = read_int(), K = read_int(),
+    Sets = new_array(N),
+    foreach (I in 1..N)
+        Sets[I] = [read_int() : _ in 1..D]
+    end,
+    awesome(K, Sets, 1, N, Y, Z, _Len),
+    printf("Case #%w: %w %w\n", TC, Y-1, Z-1).
+
+awesome(K, Sets, Lo, Hi, Y, Z, Len), Lo > Hi => Len = 0.
+awesome(K, Sets, Lo, Hi, Y, Z, Len), Lo+1 >= Hi => Len = Hi-Lo+1, Y = Lo, Z = Hi.   % since K >= 2
+awesome(K, Sets, Lo, Hi, Y, Z, Len) =>
+    Mi is (Lo+Hi) div 2,
+    maxof_awesome_cross(K, Sets, Lo, Hi, Mi, YMi, ZMi, LenMi),
+    awesome(K, Sets, Lo, Mi-1, YLo, ZLo, LenLo),
+    awesome(K, Sets, Mi+1, Hi, YHi, ZHi, LenHi),
+    (LenLo >= LenMi, LenLo >= LenHi ->
+        Len = LenLo, Y = YLo, Z = ZLo
+    ;LenMi >= LenLo, LenMi >= LenHi ->
+        Len = LenMi, Y = YMi, Z = ZMi
+    ;
+        Len = LenHi, Y = YHi, Z = ZHi
+    ).
+
+% the same as maxof(awesome_cross(K, Sets, Lo, Hi, Mi, Y, Z, Len), Len) but more efficient
+%
+maxof_awesome_cross(K, Sets, Lo, Hi, Mi, Y, Z, Len) ?=>
+    M = get_global_map(),
+    M.put(Mi,{0,0,0}),
+    awesome_cross(K, Sets, Lo, Hi, Mi, Y, Z, Len),
+    {Len0,Y0,_} = M.get(Mi),
+    (Len > Len0 -> 
+        M.put(Mi, {Len,Y,Z})
+    ; Len == Len0,Y < Y0 -> 
+        M.put(Mi, {Len,Y,Z})
+    ; 
+        true
+    ),
+    fail.
+maxof_awesome_cross(K, Sets, Lo, Hi, Mi, Y, Z, Len) =>
+    M = get_global_map(),
+    M.get(Mi) = {Len,Y,Z}.
+
+awesome_cross(K, Sets, Lo, Hi, Mi, Y, Z, Len) =>
+    member(E, Sets[Mi]),
+    ASet = [E],
+    expand(K, Sets, Lo, Hi, Mi-1, Mi+1, Y, Z, ASet),
+    Len = Z-Y+1.
+
+expand(K, Sets, Lo, Hi, Left, Right, Y, Z, ASet),
+    Lo <= Left,
+    member(E,ASet),
+    member(E,Sets[Left])
+=>
+    expand(K, Sets, Lo, Hi, Left-1, Right, Y, Z, ASet).
+expand(K, Sets, Lo, Hi, Left, Right, Y, Z, ASet),
+    Right <= Hi,
+    member(E,ASet),
+    member(E,Sets[Right])
+=>
+    expand(K, Sets, Lo, Hi, Left, Right+1, Y, Z, ASet).
+expand(K, Sets, Lo, Hi, Left, Right, Y, Z, ASet),
+    Lo <= Left,
+    len(ASet) < K
+?=>
+    member(E,Sets[Left]),
+    expand(K, Sets, Lo, Hi, Left-1, Right, Y, Z, [E|ASet]).
+expand(K, Sets, Lo, Hi, Left, Right, Y, Z, ASet),
+    Right <= Hi,
+    len(ASet) < K
+=>
+    member(E,Sets[Right]),
+    expand(K, Sets, Lo, Hi, Left, Right+1, Y, Z, [E|ASet]).
+expand(K, Sets, Lo, Hi, Left, Right, Y, Z, _ASet) =>
+    Y = Left+1,
+    Z = Right-1.

@@ -1,0 +1,27 @@
+% snapper_chain.pi (in Picat)
+% by M. Bionchik, July, 2015
+% https://code.google.com/codejam/contest/433101/dashboard#s=p0
+% Qualification Round 2010
+% Problem A. Snapper Chain
+%
+% to use: picat snapper_chain < input_file > output_file
+%
+
+main =>
+    T = read_int(stdin),
+    foreach(I in 1..T)
+        do_case(I)
+    end.
+
+do_case(Case) =>
+    N = read_int(stdin),        % number of snapper devices
+    K = read_int(stdin),        % number of snaps
+
+    writef("Case #%w: %s%n", Case, cond(snapper(N,K),"ON","OFF")).
+
+/*
+snapper(1, K) => K mod 2 == 1.
+snapper(N, K) => snapper(N-1, K), K mod 2**N >= 2**(N-1), K mod 2**N <= 2**N-1.
+*/
+snapper(N, K) => K mod 2**N == 2**N-1.
+

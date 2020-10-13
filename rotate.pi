@@ -1,0 +1,75 @@
+% rotate.pi (in Picat)
+% https://code.google.com/codejam/contest/544101/dashboard#s=p0
+% Round 1A 2010
+% Problem A. Rotate
+%
+% to use: picat rotate < input_file > output_file
+%
+
+import util.
+
+main =>
+    T = to_int(read_line()),
+    foreach(TC in 1..T)
+        [NToken, KToken] = read_line().split(),
+        N = to_int(NToken),
+        K = to_int(KToken),
+        Table = {read_line().to_array() : _ in 1..N},
+        do_case(TC, N, K, Table)
+    end.
+
+do_case(TC, N, K, Table) =>
+    Table1 = Table.rotate(N).drop(N),
+    (check(N, Table1, ['R' : _ in 1..K]) -> Red = 1; true),
+    (check(N, Table1, ['B' : _ in 1..K]) -> Blue = 1; true),
+    output(TC, Red, Blue).
+
+rotate(Table, N) = RTable =>
+    RTable = new_array(N, N),
+    foreach (R in 1..N, C in 1..N)
+        RTable[C, N-R+1] = Table[R, C]
+    end.
+
+drop(Table, N) = DTable =>
+    DTable = new_array(N, N),
+    foreach (C in 1..N)
+        Col = [Table[R, C] : R in 1..N],
+        RBs = delete_all(Col, '.'),
+        NDots = N-len(RBs),
+        NewCol = ['.' : _ in 1..NDots] ++ RBs,
+        [DTable[R, C] : R in 1..N] = NewCol
+    end.
+
+check(N, Table, Str),
+    between(1, N, R),
+    Row = Table[R].to_list(),
+    append(_, Str, _, Row)
+=>
+    true.
+check(N, Table, Str),
+    between(1, N, C),
+    Col = [Table[R, C] : R in 1..N],
+    append(_, Str, _, Col)
+=>
+    true.
+check(N, Table, Str),
+    between(1, 2*N, D),
+    Diag = [Table[R, C] : R in 1..N, C = D-R, C >= 1, C <= N],
+    append(_, Str, _, Diag)
+=>
+    true.
+check(N, Table, Str),
+    between(1-N, N-1, D),
+    Diag = [Table[R, C] : R in 1..N, C = R-D, C >= 1, C <= N],
+    append(_, Str, _, Diag)
+=>
+    true.
+
+output(TC, 1, 1) =>
+    writef("Case #%w: Both\n", TC).
+output(TC, 1, _) =>
+    writef("Case #%w: Red\n",  TC).
+output(TC, _, 1) =>
+    writef("Case #%w: Blue\n", TC).
+output(TC, _, _) =>
+    writef("Case #%w: Neither\n", TC).

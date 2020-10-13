@@ -1,0 +1,9 @@
+import os.
+
+main =>
+    Fs = listdir("."),
+    foreach (F in Fs, append(Main,".pi",F), F !== "gen_solve_all_gcj.pi", F !== "gen_html.pi")
+        printf("echo solving %s \n",Main),
+        printf("/cygdrive/c/BProlog/Emulator/picat %s < %s.in > %s.out \n",Main,Main,Main)
+    end.
+    

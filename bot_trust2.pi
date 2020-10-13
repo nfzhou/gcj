@@ -1,0 +1,41 @@
+% bot_trust2.pi (in Picat)
+% by N.F. Zhou, Jan. 4, 2016
+% https://code.google.com/codejam/contest/975485/dashboard#s=p0
+% Qualification Round 2011
+% Problem A. Bot Trust
+%
+% to use: picat bot_trust2 < input_file > output_file
+%
+
+main =>
+    T = read_int(),
+    foreach (TC in 1..T)
+        do_case(TC)
+    end.
+
+do_case(TC) =>
+    N = read_int(),
+    Lst = [(read_char(),read_int()) : _ in 1..N],
+    run(1,1,Lst,0,Time),
+    printf("Case #%w: %w\n",TC, Time).
+
+% simulate the movements of robots
+run(_OPos,_BPos,[],Time0,Time) => Time = Time0.
+run(OPos,BPos,[('O',OPos1)|Lst],Time0,Time),
+    member(('B',BPos1),Lst)
+=>
+    T = 1+abs(OPos-OPos1),
+    (abs(BPos-BPos1) =< T -> BPos2 = BPos1;  BPos2 = cond((BPos>BPos1), BPos-T, BPos+T)),
+    run(OPos1,BPos2,Lst,Time0+T,Time).
+run(OPos,BPos,[('O',OPos1)|Lst],Time0,Time) =>
+    T = 1+abs(OPos-OPos1),
+    run(OPos1,BPos,Lst,Time0+T,Time).
+run(OPos,BPos,[('B',BPos1)|Lst],Time0,Time),
+    member(('O',OPos1),Lst)
+=>
+    T = 1+abs(BPos-BPos1),
+    (abs(OPos-OPos1) =< T -> OPos2 = OPos1;  OPos2 = cond((OPos>OPos1), OPos-T, OPos+T)),
+    run(OPos2,BPos1,Lst,Time0+T,Time).
+run(OPos,BPos,[('B',BPos1)|Lst],Time0,Time) =>
+    T = 1+abs(BPos-BPos1),
+    run(OPos,BPos1,Lst,Time0+T,Time).

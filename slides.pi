@@ -1,0 +1,48 @@
+% https://code.google.com/codejam/contest/4314486/dashboard#s=p1
+% Problem B. Slides!
+% Round 1C, Problem B, in Picat, by Afa Zhou
+
+import util,sat.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [B,M] = [to_int(Token) : Token in read_line().split()],
+        not not dc(TC,B,M)                        
+    end.
+
+dc(TC,B,M) ?=>
+    Slides = new_array(B,B),
+    Slides :: 0..1,
+    Ways = new_array(B),
+    Ways :: 0..M,
+    Order = new_array(B),
+    Order :: 1..B,
+    Order[1] = 1,
+    Ways[1] = M,
+    Ways[B] = 1,
+    foreach(I in 1..B)
+        Slides[I,I] = 0,
+        Slides[B,I] = 0,
+        foreach(J in 1..B, J !== I)
+            #~Slides[I,J] #\/ #~Slides[J,I],
+            Slides[I,J] #=> Order[I] #< Order[J]
+        end,
+        if I !== B then
+            Ways[I] #= sum([Ways[J]*Slides[I,J] : J in 1..B, J !== I]),
+            Order[I] #< Order[B]
+        end
+    end,
+    sum([Slides[I,B] : I in 1..B-1]) #> 0,
+    solve((Slides,Ways)),
+
+    printf("Case #%w: POSSIBLE\n", TC),
+    foreach (I in 1..B)
+        foreach(J in 1..B)
+            printf("%w",Slides[I,J])
+        end,
+        nl
+    end.
+dc(TC,_B,_M) =>
+    printf("Case #%w: IMPOSSIBLE\n", TC).
+    

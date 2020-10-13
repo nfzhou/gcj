@@ -1,0 +1,20 @@
+% Code Jam to I/O 2016 for Women, Problem C. Polynesiaglot
+% https://code.google.com/codejam/contest/8274486/dashboard#s=p2
+% in Picat, by N.F. Zhou, 04/23/2016
+
+% to use: polynesiaglot < input_file > output_file
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [C,V,L] = [to_int(Token) : Token in read_line().split()],
+        printf("Case #%w: %w\n", TC, f(L,C,V) mod 1000000007)
+    end.
+
+table 
+f(1,C,V) = V.
+f(2,C,V) = V*V+C*V.
+f(L,C,V) = V*f(L-1,C,V)+C*V*f(L-2,C,V).
+

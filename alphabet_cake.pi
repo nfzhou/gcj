@@ -1,0 +1,53 @@
+% 2017 Round 1A, Problem A, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/5304486/dashboard#s=p0&a=1
+% Alphabet Cake
+
+import util,sat.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        [NR,NC] = [to_int(Token) : Token in read_line().split()],
+        dc(TC,NR,NC)
+    end.
+
+dc(TC,NR,NC) =>
+    A = new_array(NR),
+        foreach (R in 1..NR)
+        A[R] = {E : L in read_line(), E = cond(L=='?',_,L)}
+    end,
+    Dom = [A[R,C] : R in 1..NR, C in 1..NC, nonvar(A[R,C])].sort_remove_dups(),
+    Frames = [],           % for each letter, build a frame
+    Map = new_map(),
+    foreach (E in Dom)
+        B = new_array(NR,NC),
+        B :: 0..1,
+        [R1,R2] :: 1..NR, [C1,C2] :: 1..NC,
+        Frame = {E,B,R1,C1,R2,C2},          % (R1,C1) - upper-left corner, (R2,C2) lower-right corner
+        Map.put(E,Frame),
+        Frames := [Frame|Frames],
+        foreach (R in 1..NR, C in 1..NC)
+            (R #>= R1 #/\ C #>= C1 #/\ R #=< R2 #/\ C #=< C2) #<=> B[R,C]
+        end
+    end,
+    foreach (R in 1..NR, C in 1..NC)   % pre-filled
+        if nonvar(A[R,C]) then
+            Frame = Map.get(A[R,C]),
+            Frame = {_,B,_,_,_,_},
+            B[R,C] = 1
+        end
+    end,
+    foreach (R in 1..NR, C in 1..NC)
+        sum([B[R,C] : {_,B,_,_,_,_} in Frames]) #= 1
+    end,
+    solve(Frames),
+    foreach ({L,B,R1,C1,R2,C2} in Frames, R in R1..R2, C in C1..C2)
+        A[R,C] = L
+    end,
+    printf("Case #%w:\n", TC),
+    foreach (R in 1..NR)
+        foreach (C in 1..NC)
+            print(A[R,C])
+        end,
+        nl
+    end.

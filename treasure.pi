@@ -1,0 +1,120 @@
+% treasure.pi (in Picat)
+% by N.F. Zhou, March 25, 2015
+% https://code.google.com/codejam/contest/2270488/dashboard#s=p3&a=3 
+% Qualification Round 2013
+% Problem D. Treasure
+%
+% to use: picat treasure < input_file > output_file
+%
+% Keys held in hand and keys contained in each chest are represented as 
+% ordered lists of pairs, where in each pair the first element is a type 
+% number and the second is a quantity.
+
+import planner.
+
+main =>
+    C = read_int(),
+    foreach (Case_num in 1..C)
+        K = read_int(), N = read_int(),
+        KeyList = [read_int() : _ in 1..K].sort(),
+        TypeList = KeyList.sort_remove_dups(),
+        TypeQtPairs = [(Type,Qt) : Type in TypeList, 
+                                   Qt = sum([1 : Type in KeyList])],
+        read_chests(Chests,N),
+        initialize_table,
+        once do_case(Case_num, TypeQtPairs, Chests)
+    end.
+
+read_chests(Chests,0) => Chests = [].
+read_chests(Chests,I) => 
+    Ti = read_int(),
+    Ki = read_int(),
+    KeyList = [read_int() : _ in 1..Ki].sort(),
+    TypeList = KeyList.sort_remove_dups(),
+    TypeQtPairs = [(Type,Qt) : Type in TypeList, 
+                               Qt = sum([1 : Type in KeyList])],
+    Chests = [$chest(Ti,TypeQtPairs)|Chests1],
+    read_chests(Chests1,I-1).
+
+do_case(Case_num,Keys,Chests),
+    plan_unbounded({Keys,Chests},Plan)
+=>
+    chest_to_index(Plan,Chests,[],Is),
+    printf("Case #%w: ", Case_num),
+    foreach (I in Is)
+        printf("%w ", I)
+    end,
+    nl.
+do_case(Case_num,_Keys,_Chests) =>
+    printf("Case #%w: IMPOSSIBLE\n", Case_num).
+
+chest_to_index([],_Chests,Is0,Is) => Is = reverse(Is0).
+chest_to_index([Chest|Plan],Chests,Is0,Is) => 
+    nth(I,Chests,Chest),
+    not member(I,Is0),
+    chest_to_index(Plan,Chests,[I|Is0],Is).
+
+final({_,[]}) => true.    % done when all chests have been opened
+
+action({Keys,Chests},NewS,Action,Cost) =>
+    Action = Chest, Cost = 1,
+    select(Chest,Chests,ChestsRest),      % select a chest to open
+    Chest = $chest(KeyType,ChestKeys),
+    select((KeyType,Qt),Keys,KeysRest),   % select a key to open the chest
+    NewQt = Qt-1,
+    (NewQt == 0 ->
+        KeysRest1 = KeysRest
+    ;
+        KeysRest1 = insert_ordered(KeysRest,(KeyType,NewQt))
+    ),
+    add_keys(KeysRest1,ChestKeys,NewKeys),
+    possible(NewKeys,ChestsRest),
+    NewS = {NewKeys,ChestsRest}.
+
+%% merge two sets (ordered lists)
+add_keys(Keys1,[],NewKeys) => NewKeys = Keys1.
+add_keys([],Keys2,NewKeys) => NewKeys = Keys2.
+add_keys([(Type,Qt1)|Keys1R],[(Type,Qt2)|Keys2R],NewKeys) =>
+    NewKeys = [(Type,Qt1+Qt2)|NewKeysR],
+    add_keys(Keys1R,Keys2R,NewKeysR).
+add_keys([Key1@(Type1,_)|Keys1R],Keys2@[(Type2,_)|_],NewKeys),Type1 < Type2 =>
+    NewKeys = [Key1|NewKeysR],    
+    add_keys(Keys1R,Keys2,NewKeysR).
+add_keys(Keys1,[Key2|Keys2R],NewKeys) =>
+    NewKeys = [Key2|NewKeysR],    
+    add_keys(Keys1,Keys2R,NewKeysR).
+
+% For each key type, the available quantity should not be less than 
+% the needed quantity.It's possible to open a chest if there is a key 
+% in hand that can open it or a key is inside another chest and that 
+% chest is possible to be opened.
+table
+possible(_,[]) => true.
+possible([],Chests) => fail.
+possible(Keys,Chests) =>
+    count_keys(Chests,NeededKeys),
+    foreach((NeededType,NeededQt) in NeededKeys)
+        sum([Qt : $chest(_,ChestKeys) in Chests, (NeededType,Qt) in ChestKeys]) + 
+        sum([Qt : (NeededType,Qt) in Keys]) >= NeededQt
+    end,
+    foreach ($chest(KeyType,_) in Chests)
+        possible(Keys,KeyType,Chests)
+    end.
+
+table 
+count_keys(Chests,NeededKeys) =>
+    Keys = [Key : $chest(Key,_) in Chests],
+    KeyTypes = sort_remove_dups(Keys),
+    NeededKeys = [(KeyType,Qt) : KeyType in KeyTypes, 
+                                 Qt = sum([1 : KeyType in Keys])].
+
+table
+possible(Keys,KeyType,_Chests),
+    member((KeyType,_),Keys)
+=> 
+    true.
+possible(Keys,KeyType,Chests) =>
+    member(Chest1,Chests),
+    Chest1 = $chest(KeyType1,ChestKeys),
+    once member((KeyType,_),ChestKeys),
+    possible(Keys,KeyType1,Chests).

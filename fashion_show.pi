@@ -1,0 +1,69 @@
+% 2017 Qualification Round, Problem D, in Picat, by Afa Zhou
+% https://code.google.com/codejam/contest/3264486/dashboard#s=p3
+% Fashion Show
+
+import mip, util.
+
+main =>
+    T = read_line().to_int(),
+    OS = open("out",write),
+    foreach (TC in 1..T)
+        [N,M] = [to_int(Token) : Token in read_line().split()],
+        once dc(TC,N,M,OS)                        
+    end,
+    close(OS).
+
+dc(TC,N,M,OS) =>
+    Mx0 = new_array(N,N),
+    Mp0 = new_array(N,N),
+    Mx = new_array(N,N), Mx :: 0..1,
+    Mp = new_array(N,N), Mp :: 0..1,
+    foreach (_I in 1..M)
+        [MToken,RToken,CToken] = read_line().split(),
+        MToken = [Model],
+        R = RToken.to_int(),
+        C = CToken.to_int(),
+        fill(Model,R,C,Mx0,Mp0,Mx,Mp)
+    end,
+    bind_vars(Mx0,0), bind_vars(Mp0,0),  % a cell is 0 if it is not occupied in the given configuration
+    foreach (I in 1..N)
+        sum([Mx[I,C] : C in 1..N]) #= 1,
+        sum([Mx[R,I] : R in 1..N]) #= 1
+    end,
+    foreach(K in 1-N..N-1) 
+       sum([Mp[R,C] : R in 1..N, C = R-K, C >= 1, C =< N]) #=< 1
+    end,
+    foreach(K in 2..2*N)   
+       sum([Mp[R,C] : R in 1..N, C = K-R, C >= 1, C =< N]) #=< 1
+    end,
+    sum([Mp[R,C] : R in 1..N, C in 1..N]) #= NumP,    
+    solve($[max(NumP)],(Mp,Mx)),
+    output(TC,NumP,N,Mx0,Mp0,Mx,Mp,OS).
+
+fill('o',R,C,Mx0,Mp0,Mx,Mp) =>
+    Mx0[R,C] = 1, Mp0[R,C] = 1, Mx[R,C] = 1, Mp[R,C] = 1.
+fill('+',R,C,_Mx0,Mp0,_Mx,Mp) =>
+    Mp0[R,C] = 1, Mp[R,C] = 1.
+fill('x',R,C,Mx0,_Mp0,Mx,_Mp) =>
+    Mx0[R,C] = 1, Mx[R,C] = 1.
+
+output(TC,Nump,N,Mx0,Mp0,Mx,Mp,OS) =>
+    Count = 0,
+    foreach (R in 1..N, C in 1..N)
+        if (Mx[R,C] != Mx0[R,C] || Mp[R,C] != Mp0[R,C]) then
+            Count := Count+1
+        end
+    end,
+    printf(OS,"Case #%w: %w %w\n", TC,Nump+N,Count),
+    foreach (R in 1..N, C in 1..N)
+        if (Mx[R,C] != Mx0[R,C] || Mp[R,C] != Mp0[R,C]) then
+            if (Mx[R,C] == 1 && Mp[R,C] == 1) then
+                Model = 'o'
+            elseif (Mx[R,C] == 1) then 
+                Model = 'x'
+            else
+                Model = '+'
+            end,
+            printf(OS,"%w %w %w\n",Model,R,C)
+        end
+    end.

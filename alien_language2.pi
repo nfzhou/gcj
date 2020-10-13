@@ -1,0 +1,45 @@
+% alien_language.pi (in Picat)
+% author:  Mike Bionchik, Neng-Fa Zhou
+% date:  06/15/2015
+% https://code.google.com/codejam/contest/90101/dashboard#s=p0&a=1
+% Qualification Round 2009
+% Problem A. Alien Language
+% 
+% to use: picat alien_language < input_file > output_file
+%
+
+import util.
+
+main =>
+    [_L,D,T] = [to_int(W) : W in read_line().split()],
+    Words = [read_line() : _ in 1..D],
+    foreach(TC in 1..T)
+        do_case(TC, Words)
+    end.
+
+do_case(Case, Words) =>
+    trans_pattern(read_line(), P),
+    printf("Case #%w: %w%n", Case, 
+                             sum([1 : Word in Words, match(Word, P)])).
+
+match([], []) => true.
+match([A|As], [P|Ps]), atom(P) =>
+    A == P,
+    match(As, Ps).
+match([A|As], [G|Ps]), G.has_key(A) =>
+    match(As, Ps).
+
+trans_pattern([], P) => P = [].
+trans_pattern(['('|S], P) =>
+    P = [G|PR],
+    G = new_set(),
+    trans_pattern_group(S, SR, G),
+    trans_pattern(SR, PR).
+trans_pattern([X|S], P) => 
+    P = [X|PR],
+    trans_pattern(S, PR).
+
+trans_pattern_group([')'|S], SR, _G) =>  S = SR.
+trans_pattern_group([X|S], SR, G) =>
+    G.put(X),                           
+    trans_pattern_group(S, SR, G).

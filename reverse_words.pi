@@ -1,0 +1,17 @@
+% reverse_words.pi
+% https://code.google.com/codejam/contest/351101/dashboard#s=p1
+% Qualification Round Africa 2010
+% Problem B. Reverse Words
+%
+% to use: picat reverse_words < input_file > output_file
+%
+
+import util.
+
+main =>
+    T = read_line().to_int(),
+    foreach (TC in 1..T)
+        Words = read_line().split(),
+        printf("Case #%w: %s\n", TC, Words.reverse().join())
+    end.
+

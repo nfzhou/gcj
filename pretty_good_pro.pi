@@ -1,0 +1,81 @@
+% pretty_good_pro.pi (in Picat)
+% by N.F. Zhou, Nov. 28, 2015
+% https://code.google.com/codejam/contest/5224486/dashboard#s=p2
+% Problem C. Pretty Good Proportion
+% World Finals 2015
+% to use: picat pretty_good_pro < input_file > output_file
+%
+/*
+   Input: S is the input sequence of 0s and 1s. 
+          N is the size of S.
+          F is the given fraction. 
+
+   Let Ci be the number of 1s from S1 to Si (1-based index). Assume 
+   the substring Si..Sj has the closest 1-proportion:
+
+   (Cj - C(i-1)) / (j-i+1) .=. F  (.=. means close-to, C0 is 0)
+
+   Then
+   
+   Cj - F*j .=. C(i-1) - F*(i-1)
+
+   In order to avoid floating-point operations, change the equation to:
+
+   1000000*Cj - 1000000*F*j .=. 1000000*C(i-1) - 1000000*F*(i-1)   
+
+   Let Di be 1000000*Ci - 1000000*F*i.
+
+   This algorithm constructs a list, [(0,0),(D1,1),(D2,2),...,(Dn,n)], and sort it.
+   Then it compares the neighboring pairs in the sorted list to find the pair 
+   (Di,i) and (Dj,j) such that abs((Cj-Ci)/(j-i)-F) is the minimum.
+*/
+
+import util.
+
+main =>
+    T = to_integer(read_line()),
+    foreach (CN in 1..T)
+        [S1,S2] = read_line().split(),
+        N = to_integer(S1),
+        F = to_integer(to_real(S2)*1000000),
+        S = read_line().to_array(),
+        do_case(CN,S,N,F)
+    end.
+
+do_case(CN,S,N,F) =>
+    C = new_array(N),
+    Acc = 0,
+    foreach (I in 1..N)
+        Acc := cond(S[I]=='1', Acc+1, Acc),
+        C[I] = Acc
+    end,
+
+    Ds = [(C[I]*1000000 - I*F, I) : I in 1..N],
+
+    SDs = sort([(0,0)|Ds]),
+
+    find_i(SDs,C,F/1000000.0,Start),
+    printf("Case #%w: %w\n",CN, Start).
+
+find_i([(_,I)|SDs@[(_,J)|_]],C,F,Start) =>
+    comp_diff(I,J,C,F,Diff),
+    find_i(SDs,C,F,min(I,J),Start,Diff).
+
+find_i([_],_C,_F,Start0,Start,_Diff) =>
+    Start = Start0.
+find_i([(_,I)|SDs@[(_,J)|_]],C,F,Start0,Start,Diff) =>
+    comp_diff(I,J,C,F,Diff1),
+    (Diff1 < Diff ->
+        find_i(SDs,C,F,min(I,J),Start,Diff1)
+    ; Diff1==Diff ->
+        find_i(SDs,C,F,min(min(I,J),Start0),Start,Diff)
+    ;
+        find_i(SDs,C,F,Start0,Start,Diff)
+    ).
+
+comp_diff(I,J,C,F,Diff),I>J =>
+    comp_diff(J,I,C,F,Diff).
+comp_diff(0,J,C,F,Diff) =>
+    Diff = abs((C[J]-0)/J-F).
+comp_diff(I,J,C,F,Diff) =>
+    Diff = abs((C[J]-C[I])/(J-I)-F).
